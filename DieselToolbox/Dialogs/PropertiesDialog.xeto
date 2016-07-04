@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Item, Properties" Size="400, 500">
+	<Panel Padding="5,5,5,5">
+		<TabControl>
+			<TabPage Text="Details">
+				<TableLayout x:Name="tblDetails" Padding="5,5,5,5" Spacing="5,5">
+          <TableRow>
+            <Label VerticalAlignment="Center">Path:</Label>
+            <TextBox x:Name="txtFullPath" ReadOnly="True"></TextBox>
+          </TableRow>
+					<TableRow>
+						<Label VerticalAlignment="Center">Name:</Label>
+						<TextBox x:Name="txtName" ReadOnly="True"></TextBox>
+					</TableRow>
+					<TableRow>
+						<Label VerticalAlignment="Center">Type:</Label>
+						<TextBox x:Name="txtType" ReadOnly="True"></TextBox>
+					</TableRow>
+					<TableRow>
+						<Label VerticalAlignment="Center">Average Size:</Label>
+						<TextBox x:Name="txtAvgSize" ReadOnly="True"></TextBox>
+					</TableRow>
+					<TableRow/>
+				</TableLayout>
+			</TabPage>
+			<TabPage x:Name="tabEntries" Text="Bundle Entries">
+				<TableLayout Padding="5,5,5,5" Spacing="5,5">
+					<TableRow x:Name="tblRowEntries" ScaleHeight="True">
+						<!--<Label VerticalAlignment="Top">Bundle Entries:</Label>-->
+						<GridView x:Name="grdEntries">
+						</GridView>
+					</TableRow>
+				</TableLayout>
+			</TabPage>
+		</TabControl>
+	</Panel>
+</Form>

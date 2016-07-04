@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Package Browser" ClientSize="800, 600">
+	<TableLayout x:Name="tblMain" Spacing="5, 10" Padding="5, 5, 5, 5">
+		<TableRow>
+			
+		</TableRow>
+		<TableRow>
+      <Splitter x:Name="spltMain">
+        <Splitter.Panel1>
+          <TreeView x:Name="treeMain" Width="200" SelectionChanged="OnTreeFolderSelected" Expanded="OnTreeItemExpanded" Collapsed="OnTreeItemCollapsed" MouseUp="ViewDragMouseUp" MouseMove="ViewMouseMove"/>
+        </Splitter.Panel1>
+        <Splitter.Panel2>
+          <GridView x:Name="grdFolder" AllowMultipleSelection="True" MouseUp="ViewDragMouseUp" MouseMove="ViewMouseMove" CellDoubleClick="GrdFolder_CellDoubleClick">
+          </GridView>
+        </Splitter.Panel2>
+      </Splitter>
+		</TableRow>
+	</TableLayout>
+	<Form.Menu>
+		<MenuBar>
+			<ButtonMenuItem Text="File">
+				<ButtonMenuItem Text="Load Database" Click="LoadDatabaseClicked" Shortcut="{On Control+O, Mac=Application+Comma}" />
+				<ButtonMenuItem Text="Options">
+          <CheckMenuItem x:Name="cbtnLocalHashlists" Text="Store obtained hashlists locally"/>
+          <CheckMenuItem x:Name="cbtnExtractFullFileStructure" Text="Extracted files retain full directory structure"/>
+				</ButtonMenuItem>
+        <ButtonMenuItem x:Name="btnScripts" Text="Scripts">
+          
+        </ButtonMenuItem>
+        </ButtonMenuItem>
+			<ButtonMenuItem Text="Packages">
+				<ButtonMenuItem x:Name="pckList" Text="Package List">
+				</ButtonMenuItem>
+				<ButtonMenuItem x:Name="btnInspectPackage" Text="Inspect Selected Package" Click="btnInspectPackage_Click">
+				</ButtonMenuItem>
+			</ButtonMenuItem>
+			<MenuBar.ApplicationItems>
+				
+			</MenuBar.ApplicationItems>
+		</MenuBar>
+	</Form.Menu>
+</Form>

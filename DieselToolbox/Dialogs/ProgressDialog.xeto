@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Dialog xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Operation in Progress..." Size="300, 90">
+	<TableLayout Padding="5,5,5,5" Spacing="5,5">
+		<TableRow>
+			<Label x:Name="lblProgressString" VerticalAlignment="Center" TextAlignment="Center">Some Content</Label>
+		</TableRow>
+		<TableRow>
+			<ProgressBar Indeterminate="True">
+			</ProgressBar>
+		</TableRow>
+	</TableLayout>
+</Dialog>

@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<TableLayout Padding="5,5,5,5" Spacing="5,5">
+		<TableRow ScaleHeight="True">
+			<GridView x:Name="grdStrings">
+			</GridView>
+		</TableRow>
+		<TableRow>
+			<TableLayout Padding="5,5,5,5" Spacing="5,5">
+				<TableRow>
+					<Label VerticalAlignment="Center">ID:</Label>
+					<TextBox x:Name="txtID"></TextBox>
+				</TableRow>
+				<TableRow ScaleHeight="True">
+					<Label VerticalAlignment="Center">Text:</Label>
+					<TextBox x:Name="txtText"></TextBox>
+				</TableRow>
+				<TableRow></TableRow>
+			</TableLayout>
+		</TableRow>
+		<TableRow>
+			<StackLayout>
+				<Button x:Name="btnSave">Save Change</Button>
+			</StackLayout>
+		</TableRow>
+	</TableLayout>
+
+	<Form.Menu>
+		
+	</Form.Menu>
+</Form>
