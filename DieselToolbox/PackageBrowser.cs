@@ -25,7 +25,7 @@ namespace DieselToolbox
 
         public IParent Root { get; set; }
 
-        public List<FileEntry> RawFiles = new List<FileEntry>();
+        public Dictionary<string, FileEntry> RawFiles = new Dictionary<string, FileEntry>();
 
         public string WorkingDirectory { get; set; }
 
@@ -107,15 +107,16 @@ namespace DieselToolbox
 			Dictionary<uint, FileEntry> fileEntries = this.DatabaseEntryToFileEntry(BundleDB.GetDatabaseEntries());
 
             CurrentProgressString = "Loading Package Headers";
-            List<string> files = Directory.EnumerateFiles(this.WorkingDirectory, "*_h.bundle").ToList();
+            List<string> bundles_heads = Directory.EnumerateFiles(this.WorkingDirectory, "*_h.bundle").ToList();
+
+            List<string> files = bundles_heads.Count == 0 ? Directory.EnumerateFiles(this.WorkingDirectory, "*.bundle").ToList() : bundles_heads;
             for (int i = 0; i < files.Count; i++)
             {
                 string file = files[i];
-                string bundle_file = file.Replace("_h.bundle", "");
-                if (File.Exists(bundle_file + ".bundle"))
+                if (File.Exists(file.Replace("_h", "")))
                 {
                     CurrentProgressString = String.Format("Loading Package {0}/{1}", i, files.Count);
-					PackageHeader bundle = new PackageHeader(bundle_file);
+					PackageHeader bundle = new PackageHeader(file);
 					this.AddBundleEntriesToFileEntries (fileEntries, bundle.Entries);
                     PackageHeaders.Add(bundle.Name, bundle);
                 }
@@ -123,7 +124,10 @@ namespace DieselToolbox
 
 			CurrentProgressString = "Registring Folder Layout";
 			Root = new FolderItem(fileEntries) { Path = "assets" };
-            RawFiles = fileEntries.Values.ToList();
+            foreach(FileEntry entry in fileEntries.Values)
+            {
+                this.RawFiles.Add(entry.Path, entry);
+            }
             finishedLoad = true;
             CurrentProgressString = "Finishing";
         }

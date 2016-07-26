@@ -13,6 +13,7 @@ namespace DieselEngineFormats.Utils
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
 
@@ -247,12 +248,14 @@ namespace DieselEngineFormats.Utils
 
         public static void GenerateHashlist(string workingPath, BundleDatabase bundleDB)
         {
-            foreach (string file in Directory.EnumerateFiles(workingPath, "all_*_h.bundle"))
+            List<string> headers = Directory.EnumerateFiles(workingPath, "all_*_h.bundle").ToList();
+
+            foreach (string file in (headers.Count == 0 ? Directory.EnumerateFiles(workingPath, "all_*.bundle") : headers))
             {
-                string bundle_file = file.Replace("_h.bundle", "");
-                if (File.Exists(bundle_file + ".bundle"))
+                string bundle_file = file.Replace("_h", "");
+                if (File.Exists(bundle_file))
                 {
-					PackageHeader bundle = new PackageHeader(bundle_file);
+					PackageHeader bundle = new PackageHeader(file);
                     foreach (BundleFileEntry be in bundle.Entries)
                     {
                         DatabaseEntry ne = bundleDB.EntryFromID(be.ID);
@@ -261,7 +264,7 @@ namespace DieselEngineFormats.Utils
 
                         if (ne._path == 0x9234DD22C60D71B8 && ne._extension == 0x9234DD22C60D71B8)
                         {
-                            GenerateHashlist(workingPath, Path.Combine(workingPath, bundle_file + ".bundle"), be);
+                            GenerateHashlist(workingPath, Path.Combine(workingPath, bundle_file), be);
                             return;
                         }
                     }
@@ -372,7 +375,7 @@ namespace DieselEngineFormats.Utils
 		public static Idstring BundleNameToPackageID(string bundle_id)
 		{
 			if (bundle_id.StartsWith ("all_")) {
-				return new Idstring (bundle_id, true);
+				return new Idstring (bundle_id, null, true);
 			}
 			return UnHashString(bundle_id);
 		}
@@ -405,7 +408,7 @@ namespace DieselEngineFormats.Utils
                 if (BundleDB == null)
                     language = new Idstring(dbEntry.Language);
                 else
-                    language = BundleDB.LanguageFromID(dbEntry.Language).Name;
+                    language = BundleDB.LanguageFromID(dbEntry.Language)?.Name ?? new Idstring(dbEntry.Language.ToString(), null, true);
             } else
 				language = null;
 

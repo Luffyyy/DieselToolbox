@@ -163,6 +163,9 @@ namespace DieselToolbox
         {
             try
             {
+                if (entry.BundleEntries.Count == 0)
+                    return;
+
                 string typ = Definitions.TypeFromExtension(entry._extension.ToString());
                 dynamic exporter = null;
 

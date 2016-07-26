@@ -148,8 +148,11 @@ namespace DieselToolbox
             }
         }
 
-        public byte[] FileEntryBytes(BundleFileEntry entry)
+        private byte[] FileEntryBytes(BundleFileEntry entry)
         {
+            if (entry == null)
+                return null;
+
             string bundle_path;
             if (!File.Exists(bundle_path = System.IO.Path.Combine(this.ParentBrowser.WorkingDirectory, entry.Parent.Name.HashedString + ".bundle")))
             {

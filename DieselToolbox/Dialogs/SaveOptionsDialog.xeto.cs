@@ -39,16 +39,23 @@ namespace DieselToolbox
 
 		public void RegisterExporter(string key, dynamic obj)
 		{
-            if ((obj.GetType().GetMethod("export") != null) || obj.export != null)
+            try
             {
-                this.cmbOptions.Items.Add(obj.title, key);
-                this.Exporters.Add(key, obj);
 
-                //if (obj.options != null) {
+                if ((obj.GetType().GetMethod("export") != null) || obj.export != null)
+                {
+                    this.cmbOptions.Items.Add(obj.title, key);
+                    this.Exporters.Add(key, obj);
 
-                //}
+                    //if (obj.options != null) {
+
+                    //}
+                }
             }
-
+            catch(Exception exc)
+            {
+                Console.WriteLine(exc.Message);
+            }
         }
 
 		public void FinishedButtonClick(object sender, EventArgs e)

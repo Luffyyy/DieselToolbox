@@ -18,7 +18,7 @@ class CSVConv():
         strs = []
         strs.append("ID,String\n")
         for entry in str.LocalizationStrings:
-            strs.append('"' + entry.ID + '","' + entry.Text + '"\n')
+            strs.append('"' + entry.ID.ToString() + '","' + entry.Text + '"\n')
             
         return ''.join(strs)
         

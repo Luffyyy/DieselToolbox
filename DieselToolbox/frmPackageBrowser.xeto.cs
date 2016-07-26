@@ -305,7 +305,7 @@ namespace DieselToolbox
 		private void AddPackagesToMenu(SortedDictionary<Idstring, PackageHeader> pckIds)
 		{
 			RadioMenuItem prevItem = new RadioMenuItem{
-				Tag = new Idstring(show_all_radio, true),
+				Tag = new Idstring(show_all_radio, null, true),
 				Text = show_all_radio
 			};
 			prevItem.CheckedChanged += OnPackageChanged;

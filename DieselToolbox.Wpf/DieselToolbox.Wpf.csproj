@@ -140,4 +140,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)packages\Portable.Xaml.0.13.0\lib\dotnet\Portable.Xaml.dll" "$(TargetDir)\" /Y /I /F</PostBuildEvent>
+  </PropertyGroup>
 </Project>

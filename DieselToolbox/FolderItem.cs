@@ -64,7 +64,7 @@ namespace DieselToolbox
             List<object> objs = new List<object>();
             foreach (KeyValuePair<string, IChild> kvp in Children)
             {
-                if (kvp.Value is IParent && ((IParent)kvp.Value).ContainsAnyBundleEntries(pck))
+                if (kvp.Value is IParent)// && ((IParent)kvp.Value).ContainsAnyBundleEntries(pck))
                     objs.Add(kvp.Value);
             }
 
@@ -142,8 +142,8 @@ namespace DieselToolbox
                 {
                     IParent _entry = entry.Value as IParent;
 
-                    if (!_entry.ContainsAnyBundleEntries(pck))
-                        continue;
+                    /*if (!_entry.ContainsAnyBundleEntries(pck))
+                        continue;*/
 
                     TreeItem treeItem = new TreeItem()
                     {

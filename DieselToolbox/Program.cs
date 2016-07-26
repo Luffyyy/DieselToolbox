@@ -139,11 +139,16 @@ namespace DieselToolbox
 					else if (File.Exists(main_path = Path.Combine(folder, "main.cs")))
 					{
 						System.Reflection.Assembly objAssembly = CSScript.LoadFiles(Directory.GetFiles(folder), "DieselEngineFormats", "System.Web");
-						dynamic obj = objAssembly.CreateInstance("main", true);
-						if (obj.GetType().GetMethod("register") != null)
-						{
-							obj.register();
-						}
+                        if (objAssembly.GetType("main", false, true) != null)
+                        {
+                            dynamic obj = objAssembly.CreateInstance("main", true);
+                            if (obj.GetType().GetMethod("register") != null)
+                            {
+                                obj.register();
+                            }
+                        }
+                        else
+                            Console.WriteLine("Script with path \"{0}\" does not contain a main entry point type!", main_path);
 					}
                 }
                 catch (Exception exc)

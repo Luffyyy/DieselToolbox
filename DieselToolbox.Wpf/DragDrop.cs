@@ -53,6 +53,9 @@ namespace DieselToolbox.Wpf
 
         public void PopulateFile(List<VirtualFileDataObject.FileDescriptor> files, FileEntry parent, string path = "")
         {
+            if (parent.BundleEntries.Count == 0)
+                return;
+
             string name = this.OutputFullPaths ? parent.Path : path;
 
             VirtualFileDataObject.FileDescriptor fileDescriptor = new VirtualFileDataObject.FileDescriptor()
@@ -63,7 +66,7 @@ namespace DieselToolbox.Wpf
                     MemoryStream stream = new MemoryStream();
                     BundleFileEntry maxBundleEntry = parent.MaxBundleEntry();
                     Console.WriteLine("Extracted {0} from package: {1}", name, maxBundleEntry.PackageName.ToString());
-                    byte[] bytes = parent.FileEntryBytes(maxBundleEntry);
+                    byte[] bytes = parent.FileBytes(maxBundleEntry);
                     if (bytes != null)
                         stream.Write(bytes, 0, bytes.Length);
                     return stream;
@@ -78,11 +81,11 @@ namespace DieselToolbox.Wpf
             {
                 if (entry.Value is IParent)
                 {
-                    this.PopulateFiles(files, (IParent)entry.Value, Path.Combine(path, entry.Key));
+                    this.PopulateFiles(files, (IParent)entry.Value, Path.Combine(path ?? "", entry.Key ?? ""));
                 }
                 else if (entry.Value is FileEntry)
                 {
-                    this.PopulateFile(files, (FileEntry)entry.Value, Path.Combine(path, entry.Key));
+                    this.PopulateFile(files, (FileEntry)entry.Value, Path.Combine(path ?? "", entry.Key));
                 }
             }
         }

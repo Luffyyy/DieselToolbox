@@ -133,20 +133,19 @@ namespace DieselEngineFormats.Bundle
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public bool Load(string bundleId)
+        public bool Load(string bundle_path)
         {
-            string headerFile = bundleId + "_h.bundle";
-            if (!File.Exists(headerFile))
+            if (!File.Exists(bundle_path))
             {
                 Console.WriteLine("Bundle header file does not exist.");
                 return false;
             }
-
-			this._name = General.BundleNameToPackageID (Path.GetFileName (bundleId));
+			this._name = (Idstring)General.BundleNameToPackageID (Path.GetFileNameWithoutExtension (bundle_path).Replace("_h", "")).Clone();
             this._name.SwapEdianness();
+
             try
             {
-                using (var fs = new FileStream(headerFile, FileMode.Open))
+                using (var fs = new FileStream(bundle_path, FileMode.Open))
                 {
                     using (var br = new BinaryReader(fs))
                     {
@@ -229,12 +228,17 @@ namespace DieselEngineFormats.Bundle
                         if (itemCount > 0 && !this.HasLengthField)
                         {
 							string bundleFile;
-							if (!File.Exists(bundleFile = bundleId + ".bundle"))
+							if (!File.Exists(bundleFile = bundle_path.Replace("_h", "")))
                                 this._entries[this._entries.Count - 1].Length = -1;
                             else
                             {
-								long length = new System.IO.FileInfo(bundleFile).Length;
-                                this._entries[this._entries.Count - 1].Length = (int)(((uint)length) - this._entries[this._entries.Count - 1].Address);
+                                if (bundleFile == bundle_path)
+                                    this._entries[this._entries.Count - 1].Length = (int)(((uint)fs.Length) - this._entries[this._entries.Count - 1].Address);
+                                else
+                                {
+                                    long length = new System.IO.FileInfo(bundleFile).Length;
+                                    this._entries[this._entries.Count - 1].Length = (int)(((uint)length) - this._entries[this._entries.Count - 1].Address);
+                                }
                             }
                         }
 

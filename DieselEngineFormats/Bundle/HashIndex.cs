@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -7,26 +8,35 @@ using DieselEngineFormats.Utils;
 
 namespace DieselEngineFormats.Bundle
 {
-    public class Idstring : IComparable
+    public class Idstring : IComparable, ICloneable
     {
-        private string _UnHashed;
+        private readonly string[] _UnHashedParts;
+
+        public string[] UnHashedParts { get { return _UnHashedParts; } }
 
         public string UnHashed
         {
             get
             {
-                if (_UnHashed == null)
+                if (_UnHashedParts == null || _UnHashedParts.Length == 0)
                 {
-                    _UnHashed = "ERROR: " + String.Format("{0:x}", HashedString);
+                    return "ERROR: " + String.Format("{0:x}", HashedString);
                 }
 
-                return _UnHashed;
+                string built_string = _UnHashedParts[0];
+                for (int i = 1; i < _UnHashedParts.Length; i++)
+                {
+                    built_string += "/" + _UnHashedParts[i];
+                }
+                return built_string;
             }
         }
 
         public bool HasUnHashed { get; set; }
 
         public bool Same { get; set; }
+
+        public bool IsPath { get { return _UnHashedParts.Length > 1; } }
 
         private string _HashedString;
 
@@ -57,14 +67,13 @@ namespace DieselEngineFormats.Bundle
             get
             {
                 if (_hashed == 0)
-                {
-                    _hashed = Hash64.HashString(UnHashed);
-                }
+                    _hashed = Hash64.HashString(this.UnHashed);
+
                 return _hashed;
             }
         }
 
-        public Idstring(string str, bool same = false)
+        public Idstring(string str, Dictionary<string, string> strings = null, bool same = false)
         {
             if (same)
                 _HashedString = str;
@@ -72,7 +81,24 @@ namespace DieselEngineFormats.Bundle
             this.Same = same;
 
             HasUnHashed = true;
-            _UnHashed = str;
+            string[] parts = str.Split('/');
+            if (strings != null)
+            {
+                lock (strings)
+                {
+                    for (int i = 0; i < parts.Length - 1; i++)
+                    {
+                        string part = parts[i];
+                        if (!strings.ContainsKey(part))
+                            strings.Add(part, part);
+
+                        parts[i] = strings[part];
+                            //parts[i] = strings.First(s => s.Equals(part));
+                    }
+                }
+            }
+
+            this._UnHashedParts = parts;
         }
 
         public Idstring(ulong hashed)
@@ -93,23 +119,28 @@ namespace DieselEngineFormats.Bundle
 
         public override string ToString()
         {
-            return this.HasUnHashed ? _UnHashed : HashedString;
+            return this.HasUnHashed ? UnHashed : HashedString;
         }
 
         public int CompareTo(object obj)
         {
             return this.ToString().CompareTo((obj as Idstring)?.ToString() ?? "");
         }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 
     public static class HashIndex
     {
-        private static Dictionary<ulong, Idstring> exts = new Dictionary<ulong, Idstring>();
-		private static Dictionary<ulong, Idstring> paths = new Dictionary<ulong, Idstring>();
+        private static Dictionary<ulong, Idstring> paths = new Dictionary<ulong, Idstring>();
         //private Dictionary<uint, string> sounds = new Dictionary<uint, string>();
-		private static Dictionary<ulong, Idstring> others = new Dictionary<ulong, Idstring>();
+        private static Dictionary<ulong, Idstring> others = new Dictionary<ulong, Idstring>();
+        private static Dictionary<string, string> strings = new Dictionary<string, string>();
 
-		public static string version;
+        public static string version;
 
         public static Idstring GetPath(ulong hash)
         {
@@ -121,33 +152,28 @@ namespace DieselEngineFormats.Bundle
 
         public static Idstring GetExtension(ulong hash)
         {
-			if (exts.ContainsKey (hash))
-				return exts [hash];
-			else
-				return new Idstring(hash);
+            return GetOther(hash);
         }
 
-		public static Idstring GetOther(ulong hash)
+        public static Idstring GetOther(ulong hash)
         {
-			if (others.ContainsKey (hash))
-				return others [hash];
-			else
+            if (others.ContainsKey(hash))
+                return others[hash];
+            else
                 return new Idstring(hash);
         }
 
-		public static Idstring GetAny(ulong hash)
+        public static Idstring GetAny(ulong hash)
         {
             if (paths.ContainsKey(hash))
                 return paths[hash];
-            else if (exts.ContainsKey(hash))
-                return exts[hash];
             else if (others.ContainsKey(hash))
                 return others[hash];
             else
                 return new Idstring(hash);
         }
 
-		public static void Load(ref HashSet<string> new_paths, ref HashSet<string> new_exts)
+        public static void Load(ref HashSet<string> new_paths, ref HashSet<string> new_others)
         {
             foreach (string path in new_paths)
             {
@@ -156,41 +182,34 @@ namespace DieselEngineFormats.Bundle
                 paths[ids.Hashed] = ids;
             }
 
-            foreach (string ext in new_exts)
+            foreach (string other in new_others)
             {
-                Idstring ids = new Idstring(ext);
-                CheckCollision(exts, ids.Hashed, ids);
-                exts[ids.Hashed] = ids;
+                Idstring ids = new Idstring(other);
+                CheckCollision(others, ids.Hashed, ids);
+                others[ids.Hashed] = ids;
             }
         }
 
-		private static void CheckCollision(Dictionary<ulong, Idstring> item, ulong hash, Idstring value)
+        private static void CheckCollision(Dictionary<ulong, Idstring> item, ulong hash, Idstring value)
         {
-            if ( item.ContainsKey(hash) && (item[hash] != value) )
+            if (item.ContainsKey(hash) && (item[hash] != value))
             {
                 Console.WriteLine("Hash collision: {0:x} : {1} == {2}", hash, item[hash], value);
             }
         }
 
-		public static void Clear()
+        public static void Clear()
         {
-            exts.Clear();
             paths.Clear();
-			others.Clear();
+            others.Clear();
         }
 
-		public static void GenerateHashList(string HashlistFile, string tag = null)
+        public static void GenerateHashList(string HashlistFile, string tag = null)
         {
             StreamWriter fs = new StreamWriter(HashlistFile, false);
 
             if (version != null)
                 fs.WriteLine("//" + version);
-
-            foreach (KeyValuePair<ulong, Idstring> pair in exts)
-            {
-                if (tag == null || (pair.Value.Tag == tag))
-                    fs.WriteLine(pair.Value.UnHashed);
-            }
 
             foreach (KeyValuePair<ulong, Idstring> pair in paths)
             {
@@ -207,28 +226,41 @@ namespace DieselEngineFormats.Bundle
             fs.Close();
         }
 
-        public static bool AddHash(string hash, string tag = null)
+        public static Idstring CreateHash(string hash, string tag = null)
         {
-            Idstring ids = new Idstring(hash) { Tag = tag };
-            Dictionary<ulong, Idstring> hash_tbl = others;
-            if ((hash.Contains("/") || hash.Contains("\\") || hash.Equals("idstring_lookup") || hash.Equals("existing_banks")) && !paths.ContainsKey(ids.Hashed))
+            if ((hash.Contains("/") || hash.Equals("idstring_lookup") || hash.Equals("existing_banks")))
             {
-                hash_tbl = paths;
                 hash = hash.ToLower();
             }
-            else if (!hash.Contains("/") && !hash.Contains(".") && !hash.Contains(":") && !hash.Contains("\\") && !exts.ContainsKey(ids.Hashed))
-                hash_tbl = exts;
 
-            if (!hash_tbl.ContainsKey(ids.Hashed))
+            return new Idstring(hash, strings) { Tag = tag };
+        }
+
+        public static bool AddHash(string hash, string tag = null)
+        {
+            Idstring ids = CreateHash(hash, tag);
+
+            return AddHash(ids);
+        }
+
+        public static bool AddHash(Idstring ids)
+        {
+            Dictionary<ulong, Idstring> hash_tbl = ids.IsPath ? paths : others;
+
+            lock (hash_tbl)
             {
-                hash_tbl.Add(ids.Hashed, ids);
-                return true;
+                if (!hash_tbl.ContainsKey(ids.Hashed))
+                {
+                    hash_tbl.Add(ids.Hashed, ids);
+                    return true;
+                }
             }
 
             return false;
         }
 
-		public static void Load(ref HashSet<string> new_paths, ref HashSet<string> new_exts, ref HashSet<string> new_other)
+
+        public static void Load(ref HashSet<string> new_paths, ref HashSet<string> new_exts, ref HashSet<string> new_other)
         {
             foreach (string path in new_paths)
             {
@@ -237,48 +269,27 @@ namespace DieselEngineFormats.Bundle
                 paths[ids.Hashed] = ids;
             }
 
-            foreach (string ext in new_exts)
-            {
-                Idstring ids = new Idstring(ext);
-                CheckCollision(exts, ids.Hashed, ids);
-                exts[ids.Hashed] = ids;
-            }
-
             foreach (string other in new_other)
             {
                 Idstring ids = new Idstring(other);
-                CheckCollision(exts, ids.Hashed, ids);
+                CheckCollision(others, ids.Hashed, ids);
                 others[ids.Hashed] = ids;
             }
         }
 
-		public static bool Load(string HashlistFile)
+        public static bool Load(string HashlistFile)
         {
             try
             {
                 string tag = Path.GetFileName(HashlistFile);
-
-                foreach (string hash in File.ReadLines(HashlistFile))
+                System.Threading.Tasks.Parallel.ForEach(File.ReadLines(HashlistFile), hash =>
+                //foreach (string hash in File.ReadLines(HashlistFile))
                 {
                     if (String.IsNullOrEmpty(hash) || hash.StartsWith("//")) //Check for empty or comment
-                        continue;
+                        return; //continue;
 
-                    Idstring ids = new Idstring(hash) { Tag = tag };
-
-                    if ((hash.Contains("/") || hash.Contains("\\") || hash.Equals("idstring_lookup") || hash.Equals("existing_banks")) && !paths.ContainsKey(ids.Hashed))
-                        paths.Add(ids.Hashed, ids);
-                    else if (!hash.Contains("/") && !hash.Contains(".") && !hash.Contains(":") && !hash.Contains("\\") && !exts.ContainsKey(ids.Hashed))
-                        exts.Add(ids.Hashed, ids);
-                    else if (!others.ContainsKey(ids.Hashed))
-                        others.Add(ids.Hashed, ids);
-
-                    /*else if (hash.Contains("pln_"))
-                    {
-                        uint wwiseHashed = Hash64.WWiseHash(hash);
-                        if (!sounds.ContainsKey(wwiseHashed))
-                            sounds.Add(wwiseHashed, hash);
-                    }*/
-                }
+                    AddHash(hash, tag);
+                });
             }
             catch (Exception exc)
             {

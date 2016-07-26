@@ -73,7 +73,10 @@
     <Content Include="scripts\HashlistOutputter\main.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="scripts\HashlistScraperScript\main.cs">
+    <Content Include="scripts\HashlistScraperScript\main.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="scripts\HeistExtractor\main.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
     <Compile Include="TempFileManager.cs" />

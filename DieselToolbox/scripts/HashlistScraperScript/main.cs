@@ -63,7 +63,6 @@ public class HashlistScraper
 
     public void execute(PackageBrowser browser)
     {
-
         hashlist_tag = _hashlist_tag + Directory.EnumerateFiles(Definitions.HashDir, _hashlist_tag + "*").ToList().Count;
         error_output = new StreamWriter(hashlist_tag + ".log");
 
@@ -71,9 +70,9 @@ public class HashlistScraper
         clock.Start();
         error_output.Write("Hashlist Scraper executed" + "\n");
         error_output.Flush();
-        foreach (FileEntry entry in browser.RawFiles)
+        foreach (KeyValuePair<string, FileEntry> entry in browser.RawFiles)
         {
-            this.ProcessFile(entry);
+            this.ProcessFile(entry.Value);
         }
         //this.ProcessFolder(browser.Root);
         //Path.Combine(Definitions.HashDir, hashlist_tag)
@@ -211,6 +210,9 @@ public class HashlistScraper
         this.ProcessXML(file, new List<XMLTagLookup> {
             new XMLTagLookup { node_name="diffuse_texture", value=new[]{"file" } },
             new XMLTagLookup { node_name="bump_normal_texture", value=new[]{"file" } },
+            new XMLTagLookup { node_name="self_illumination_texture", value=new[]{"file" } },
+            new XMLTagLookup { node_name="reflection_texture", value=new[]{"file" } },
+            new XMLTagLookup { node_name="opacity_texture", value=new[]{"file" } },
             new XMLTagLookup { node_name="material", value = new[]{"name" }}
         });
     }
