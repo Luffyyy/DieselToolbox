@@ -76,9 +76,9 @@
     <Content Include="scripts\HashlistScraperScript\main.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Compile Include="scripts\HeistExtractor\main.cs">
+    <Content Include="scripts\HeistExtractor\main.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
+    </Content>
     <Compile Include="TempFileManager.cs" />
     <Compile Include="Windows\FontEditor.xeto.cs">
       <DependentUpon>FontEditor.xeto</DependentUpon>
