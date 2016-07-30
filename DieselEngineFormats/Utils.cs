@@ -302,8 +302,6 @@ namespace DieselEngineFormats.Utils
                     {
                         if (idstring.Contains("/"))
                             new_paths.Add(idstring);
-                        else if (!idstring.Contains("/") && !idstring.Contains(".") && !idstring.Contains(":") && !idstring.Contains("\\"))
-                            new_exts.Add(idstring);
                         else
                             new_other.Add(idstring);
                     }
@@ -314,7 +312,7 @@ namespace DieselEngineFormats.Utils
 
                     HashIndex.Clear();
 
-					HashIndex.Load(ref new_paths, ref new_exts, ref new_other);
+					HashIndex.Load(ref new_paths, ref new_other);
 
 					HashIndex.GenerateHashList(Path.Combine(workingPath, HashlistFile));
 

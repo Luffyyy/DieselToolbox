@@ -15,8 +15,8 @@ namespace DieselToolbox
 {
     public class FileEntry : IViewable, IChild
     {
-        private string _size;
-        private string _fullpath;
+        private uint? _size = null;
+        private string _name, _fullpath;
         private BundleFileEntry _max_entry = null;
         private dynamic _temp_exported;
 
@@ -41,7 +41,6 @@ namespace DieselToolbox
 
                     _fullpath += "." + this._extension.ToString();
                 }
-
                 return _fullpath;
             }
         }
@@ -50,8 +49,18 @@ namespace DieselToolbox
         {
             get
             {
+                if (_name == null)
+                {
+                    _name = System.IO.Path.GetFileName(this._path.ToString());
+                    if (this._language != null)
+                    {
+                        _name += "." + this._language.ToString();
+                    }
 
-                return System.IO.Path.GetFileName(this.Path);
+                    _name += "." + this._extension.ToString();
+                }
+
+                return _name;
             }
         }
 
@@ -90,19 +99,19 @@ namespace DieselToolbox
             {
                 if (_size == null)
                 {
-                    int currentSize = 0;
+                    int _size = 0;
                     foreach (BundleFileEntry be in this.BundleEntries)
-                        currentSize += be.Length;
+                        _size += be.Length;
 
-                    currentSize = currentSize / Math.Max(this.BundleEntries.Count, 1);
-
-                    if (currentSize < 1024)
-                        _size = currentSize.ToString() + " B";
-                    else
-                        _size = string.Format("{0:n0}", currentSize / 1024) + " KB";
+                    _size = _size / Math.Max(this.BundleEntries.Count, 1);
                 }
+                string str_size;
+                if (_size < 1024)
+                    str_size = _size.ToString() + " B";
+                else
+                    str_size = string.Format("{0:n0}", _size / 1024) + " KB";
 
-                return _size;
+                return str_size;
             }
         }
 

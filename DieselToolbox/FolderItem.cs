@@ -101,7 +101,7 @@ namespace DieselToolbox
 
         public void AddFileEntry(FileEntry entry)
         {
-            string[] path_parts = entry._path.ToString().Split('/');
+            string[] path_parts = entry._path.UnHashedParts;
             if (path_parts.Length > (folderLevel + 1))
             {
                 string initial_folder = path_parts[folderLevel];

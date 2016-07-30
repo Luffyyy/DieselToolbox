@@ -12,7 +12,7 @@ namespace DieselEngineFormats.Bundle
     {
         private readonly string[] _UnHashedParts;
 
-        public string[] UnHashedParts { get { return _UnHashedParts; } }
+        public string[] UnHashedParts { get { return _UnHashedParts ?? new[] { HashedString }; } }
 
         public string UnHashed
         {
@@ -20,7 +20,7 @@ namespace DieselEngineFormats.Bundle
             {
                 if (_UnHashedParts == null || _UnHashedParts.Length == 0)
                 {
-                    return "ERROR: " + String.Format("{0:x}", HashedString);
+                    return null;//"ERROR: " + String.Format("{0:x}", HashedString);
                 }
 
                 string built_string = _UnHashedParts[0];
@@ -36,48 +36,44 @@ namespace DieselEngineFormats.Bundle
 
         public bool Same { get; set; }
 
-        public bool IsPath { get { return _UnHashedParts.Length > 1; } }
-
-        private string _HashedString;
+        public bool IsPath { get { return _UnHashedParts.Length > 1 || this.UnHashed == "existing_banks" || this.UnHashed == "idstring_lookup"; } }
 
         public string HashedString
         {
             get
             {
-                if (_HashedString == null)
+                if (Same)
+                    return UnHashed;
+
+                string _HashedString = String.Format("{0:x}", this.Hashed);
+                if (_HashedString.Length != 16)
                 {
-                    _HashedString = String.Format("{0:x}", this.Hashed);
-                    if (_HashedString.Length != 16)
-                    {
-                        string preStr = "";
-                        for (int i = 0; i < 16 - _HashedString.Length; i++)
-                            preStr += "0";
-                        _HashedString = preStr + _HashedString;
-                    }
+                    string preStr = "";
+                    for (int i = 0; i < 16 - _HashedString.Length; i++)
+                        preStr += "0";
+                    _HashedString = preStr + _HashedString;
                 }
 
                 return _HashedString;
             }
         }
 
-        private ulong _hashed = 0;
+        //public ulong _hashed = 0;
 
         public ulong Hashed
         {
             get
             {
-                if (_hashed == 0)
+                /*if (_hashed == 0)
                     _hashed = Hash64.HashString(this.UnHashed);
 
-                return _hashed;
+                return _hashed;*/
+                return Hash64.HashString(this.UnHashed);
             }
         }
 
         public Idstring(string str, Dictionary<string, string> strings = null, bool same = false)
         {
-            if (same)
-                _HashedString = str;
-
             this.Same = same;
 
             HasUnHashed = true;
@@ -93,7 +89,6 @@ namespace DieselEngineFormats.Bundle
                             strings.Add(part, part);
 
                         parts[i] = strings[part];
-                            //parts[i] = strings.First(s => s.Equals(part));
                     }
                 }
             }
@@ -103,16 +98,13 @@ namespace DieselEngineFormats.Bundle
 
         public Idstring(ulong hashed)
         {
-            _hashed = hashed;
+            //_hashed = hashed;
             HasUnHashed = false;
         }
 
         public void SwapEdianness()
         {
-            _hashed = General.SwapEdianness(this.Hashed);
-
-            if (!this.Same)
-                this._HashedString = null;
+            //_hashed = General.SwapEdianness(this.Hashed);
         }
 
         public string Tag { get; set; }
@@ -136,7 +128,6 @@ namespace DieselEngineFormats.Bundle
     public static class HashIndex
     {
         private static Dictionary<ulong, Idstring> paths = new Dictionary<ulong, Idstring>();
-        //private Dictionary<uint, string> sounds = new Dictionary<uint, string>();
         private static Dictionary<ulong, Idstring> others = new Dictionary<ulong, Idstring>();
         private static Dictionary<string, string> strings = new Dictionary<string, string>();
 
@@ -177,14 +168,14 @@ namespace DieselEngineFormats.Bundle
         {
             foreach (string path in new_paths)
             {
-                Idstring ids = new Idstring(path);
+                Idstring ids = new Idstring(path, strings);
                 CheckCollision(paths, ids.Hashed, ids);
                 paths[ids.Hashed] = ids;
             }
 
             foreach (string other in new_others)
             {
-                Idstring ids = new Idstring(other);
+                Idstring ids = new Idstring(other, strings);
                 CheckCollision(others, ids.Hashed, ids);
                 others[ids.Hashed] = ids;
             }
@@ -259,24 +250,6 @@ namespace DieselEngineFormats.Bundle
             return false;
         }
 
-
-        public static void Load(ref HashSet<string> new_paths, ref HashSet<string> new_exts, ref HashSet<string> new_other)
-        {
-            foreach (string path in new_paths)
-            {
-                Idstring ids = new Idstring(path);
-                CheckCollision(paths, ids.Hashed, ids);
-                paths[ids.Hashed] = ids;
-            }
-
-            foreach (string other in new_other)
-            {
-                Idstring ids = new Idstring(other);
-                CheckCollision(others, ids.Hashed, ids);
-                others[ids.Hashed] = ids;
-            }
-        }
-
         public static bool Load(string HashlistFile)
         {
             try
@@ -290,6 +263,8 @@ namespace DieselEngineFormats.Bundle
 
                     AddHash(hash, tag);
                 });
+
+                GC.Collect();
             }
             catch (Exception exc)
             {
