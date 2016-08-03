@@ -10,23 +10,28 @@ namespace DieselEngineFormats.Bundle
 {
     public class Idstring : IComparable, ICloneable
     {
-        private readonly string[] _UnHashedParts;
+        private string UniqueUnhashed;
+        private readonly int[] _UnHashedParts;
 
-        public string[] UnHashedParts { get { return _UnHashedParts ?? new[] { HashedString }; } }
-
+        public int[] UnHashedParts { get { return _UnHashedParts; } }
+        
         public string UnHashed
         {
             get
             {
-                if (_UnHashedParts == null || _UnHashedParts.Length == 0)
+                if ((_UnHashedParts == null || _UnHashedParts.Length == 0) && UniqueUnhashed == null)
                 {
                     return null;//"ERROR: " + String.Format("{0:x}", HashedString);
                 }
 
-                string built_string = _UnHashedParts[0];
-                for (int i = 1; i < _UnHashedParts.Length; i++)
+                string built_string = UniqueUnhashed;
+                if (_UnHashedParts != null)
                 {
-                    built_string += "/" + _UnHashedParts[i];
+                    built_string = HashIndex.LookupString(_UnHashedParts[0]);
+                    for (int i = 1; i < _UnHashedParts.Length; i++)
+                    {
+                        built_string += "/" + HashIndex.LookupString(_UnHashedParts[i]);
+                    }
                 }
                 return built_string;
             }
@@ -36,7 +41,7 @@ namespace DieselEngineFormats.Bundle
 
         public bool Same { get; set; }
 
-        public bool IsPath { get { return _UnHashedParts.Length > 1 || this.UnHashed == "existing_banks" || this.UnHashed == "idstring_lookup"; } }
+        public bool IsPath { get { return (_UnHashedParts != null && _UnHashedParts.Length > 1) || this.UnHashed == "existing_banks" || this.UnHashed == "idstring_lookup"; } }
 
         public string HashedString
         {
@@ -58,53 +63,57 @@ namespace DieselEngineFormats.Bundle
             }
         }
 
-        //public ulong _hashed = 0;
+        public ulong _hashed = 0;
 
         public ulong Hashed
         {
             get
             {
-                /*if (_hashed == 0)
+                if (_hashed == 0)
                     _hashed = Hash64.HashString(this.UnHashed);
 
-                return _hashed;*/
-                return Hash64.HashString(this.UnHashed);
+                return _hashed;
+                //return Hash64.HashString(this.UnHashed);
             }
         }
 
-        public Idstring(string str, Dictionary<string, string> strings = null, bool same = false)
+        public Idstring(string str, bool same = false)
         {
             this.Same = same;
 
             HasUnHashed = true;
             string[] parts = str.Split('/');
-            if (strings != null)
+            int[] hash_parts = new int[parts.Length];
+            if (parts.Length != 1)
             {
-                lock (strings)
+                lock (HashIndex.StringLookup)
                 {
-                    for (int i = 0; i < parts.Length - 1; i++)
+                    for (int i = 0; i < parts.Length; i++)
                     {
                         string part = parts[i];
-                        if (!strings.ContainsKey(part))
-                            strings.Add(part, part);
+                        if (!HashIndex.StringLookup.ContainsKey(part.GetHashCode()))
+                            HashIndex.StringLookup.Add(part.GetHashCode(), part);
 
-                        parts[i] = strings[part];
+                        hash_parts[i] = part.GetHashCode();
                     }
                 }
+                this._UnHashedParts = hash_parts;
             }
-
-            this._UnHashedParts = parts;
+            else
+            {
+                UniqueUnhashed = str;
+            }
         }
 
         public Idstring(ulong hashed)
         {
-            //_hashed = hashed;
+            _hashed = hashed;
             HasUnHashed = false;
         }
 
         public void SwapEdianness()
         {
-            //_hashed = General.SwapEdianness(this.Hashed);
+            _hashed = General.SwapEdianness(this.Hashed);
         }
 
         public string Tag { get; set; }
@@ -129,7 +138,7 @@ namespace DieselEngineFormats.Bundle
     {
         private static Dictionary<ulong, Idstring> paths = new Dictionary<ulong, Idstring>();
         private static Dictionary<ulong, Idstring> others = new Dictionary<ulong, Idstring>();
-        private static Dictionary<string, string> strings = new Dictionary<string, string>();
+        public static Dictionary<int, string> StringLookup = new Dictionary<int, string>();
 
         public static string version;
 
@@ -168,14 +177,14 @@ namespace DieselEngineFormats.Bundle
         {
             foreach (string path in new_paths)
             {
-                Idstring ids = new Idstring(path, strings);
+                Idstring ids = new Idstring(path);
                 CheckCollision(paths, ids.Hashed, ids);
                 paths[ids.Hashed] = ids;
             }
 
             foreach (string other in new_others)
             {
-                Idstring ids = new Idstring(other, strings);
+                Idstring ids = new Idstring(other);
                 CheckCollision(others, ids.Hashed, ids);
                 others[ids.Hashed] = ids;
             }
@@ -224,7 +233,7 @@ namespace DieselEngineFormats.Bundle
                 hash = hash.ToLower();
             }
 
-            return new Idstring(hash, strings) { Tag = tag };
+            return new Idstring(hash) { Tag = tag };
         }
 
         public static bool AddHash(string hash, string tag = null)
@@ -250,6 +259,11 @@ namespace DieselEngineFormats.Bundle
             return false;
         }
 
+        public static string LookupString(int hashcode)
+        {
+            return StringLookup.ContainsKey(hashcode) ? StringLookup[hashcode] : null;
+        }
+
         public static bool Load(string HashlistFile)
         {
             try
@@ -263,8 +277,6 @@ namespace DieselEngineFormats.Bundle
 
                     AddHash(hash, tag);
                 });
-
-                GC.Collect();
             }
             catch (Exception exc)
             {

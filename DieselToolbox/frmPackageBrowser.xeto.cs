@@ -305,7 +305,7 @@ namespace DieselToolbox
 		private void AddPackagesToMenu(SortedDictionary<Idstring, PackageHeader> pckIds)
 		{
 			RadioMenuItem prevItem = new RadioMenuItem{
-				Tag = new Idstring(show_all_radio, null, true),
+				Tag = new Idstring(show_all_radio, true),
 				Text = show_all_radio
 			};
 			prevItem.CheckedChanged += OnPackageChanged;
@@ -359,7 +359,7 @@ namespace DieselToolbox
 		{
 			PackageBrowser brows = sender as PackageBrowser;
 
-			this.grdFolder.DataStore = (brows.SelectedFolder).ChildObjects(_focused_package);
+            this.grdFolder.DataStore = (brows.SelectedFolder).ChildObjects(_focused_package);
 		}
 
 		void OnTreeFolderSelected(object sender, EventArgs e)

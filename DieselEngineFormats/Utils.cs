@@ -373,7 +373,7 @@ namespace DieselEngineFormats.Utils
 		public static Idstring BundleNameToPackageID(string bundle_id)
 		{
 			if (bundle_id.StartsWith ("all_")) {
-				return new Idstring (bundle_id, null, true);
+				return new Idstring (bundle_id, true);
 			}
 			return UnHashString(bundle_id);
 		}
@@ -406,7 +406,7 @@ namespace DieselEngineFormats.Utils
                 if (BundleDB == null)
                     language = new Idstring(dbEntry.Language);
                 else
-                    language = BundleDB.LanguageFromID(dbEntry.Language)?.Name ?? new Idstring(dbEntry.Language.ToString(), null, true);
+                    language = BundleDB.LanguageFromID(dbEntry.Language)?.Name ?? new Idstring(dbEntry.Language.ToString(), true);
             } else
 				language = null;
 

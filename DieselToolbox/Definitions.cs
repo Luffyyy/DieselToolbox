@@ -97,5 +97,7 @@ namespace DieselToolbox
         public static string TempDir = "Browser";
 
         public static string HashDir = "./Hashlists";
+
+        public static string FolderTypeName = "File Folder";
     }
 }

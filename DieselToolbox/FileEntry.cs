@@ -15,10 +15,9 @@ namespace DieselToolbox
 {
     public class FileEntry : IViewable, IChild
     {
-        private uint? _size = null;
+        private uint _size;
         private string _name, _fullpath;
         private BundleFileEntry _max_entry = null;
-        private dynamic _temp_exported;
 
         public Idstring _path;
 
@@ -97,13 +96,13 @@ namespace DieselToolbox
         {
             get
             {
-                if (_size == null)
+                if (_size == 0 && this.BundleEntries.Count > 0)
                 {
-                    int _size = 0;
+                    _size = 0;
                     foreach (BundleFileEntry be in this.BundleEntries)
-                        _size += be.Length;
+                        _size += (uint)be.Length;
 
-                    _size = _size / Math.Max(this.BundleEntries.Count, 1);
+                    _size = (uint)(_size / Math.Max(this.BundleEntries.Count, 1));
                 }
                 string str_size;
                 if (_size < 1024)
@@ -137,7 +136,7 @@ namespace DieselToolbox
             _max_entry = null;
         }
 
-        public dynamic FileData(BundleFileEntry be = null, dynamic exporter = null)
+        public object FileData(BundleFileEntry be = null, dynamic exporter = null)
         {
             if (exporter == null)
             {
@@ -152,8 +151,9 @@ namespace DieselToolbox
 
                 if (stream == null)
                     return null;
-
-                return exporter.export(stream);
+                object data = exporter.export(stream);
+                //stream.Close();
+                return data;
             }
         }
 
@@ -169,7 +169,6 @@ namespace DieselToolbox
                 return null;
             }
 
-            byte[] data = null;
             try
             {
                 using (FileStream fs = new FileStream(bundle_path, FileMode.Open, FileAccess.Read))
@@ -179,7 +178,7 @@ namespace DieselToolbox
                         if (entry.Length != 0)
                         {
                             fs.Position = entry.Address;
-                            data = br.ReadBytes((int)(entry.Length == -1 ? fs.Length - fs.Position : entry.Length));
+                            return br.ReadBytes((int)(entry.Length == -1 ? fs.Length - fs.Position : entry.Length));
                         }
                     }
                 }
@@ -190,7 +189,7 @@ namespace DieselToolbox
                 Console.WriteLine(exc.StackTrace);
             }
 
-            return data;
+            return null;
         }
 
         public MemoryStream FileStream(BundleFileEntry entry = null)

@@ -16,8 +16,6 @@ namespace DieselToolbox
     {
         public class TempFile : IDisposable
         {
-            private FileStream fs;
-
             public TempFile(FileEntry entry, BundleFileEntry be = null, dynamic exporter = null)
             {
                 Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Definitions.TempDir, entry.Name);
@@ -25,25 +23,27 @@ namespace DieselToolbox
                 if (exporter?.extension != null)
                     Path += "." + exporter.extension;
 
-                dynamic file_data = entry.FileData(be, exporter);
+                var file_data = entry.FileData(be, exporter);
 
                 if (file_data is byte[])
+                {
                     File.WriteAllBytes(Path, file_data);
+                }
                 else if (file_data is Stream)
                 {
-                    FileStream file_stream = File.Create(Path);
-                    ((Stream)file_data).CopyTo(file_stream);
-                    file_stream.Close();
+                    using (FileStream file_stream = File.Create(Path))
+                        ((Stream)file_data).CopyTo(file_stream);
+
+                    ((Stream)file_data).Close();
                 }
                 else if (file_data is string)
                     File.WriteAllText(Path, file_data);
                 else if (file_data is string[])
                     File.WriteAllLines(Path, file_data);
 
-                //fs = new FileStream(Path, FileMode.Open, FileAccess.Write, FileShare.ReadWrite, 1, FileOptions.DeleteOnClose );
-
                 Entry = be;
                 ExporterKey = exporter?.key;
+                file_data = null;
             }
 
             ~TempFile()
@@ -184,6 +184,7 @@ namespace DieselToolbox
                     TempFile temp = this.GetTempFile(entry, be, exporter);
                     //{
                         ProcessStartInfo pi = new ProcessStartInfo(temp.Path);
+                
                         pi.UseShellExecute = true;
                         if (General.IsLinux)
                         {
@@ -194,7 +195,7 @@ namespace DieselToolbox
                             pi.FileName = temp.Path;
 
                         Process proc = Process.Start(pi);
-                        temp.RunProcess = proc;
+                        //temp.RunProcess = proc;
                         if (!this.TempFiles.ContainsKey(entry))
                             this.TempFiles.Add(entry, temp);
                         /*if (proc == null)//seconds -> milliseconds

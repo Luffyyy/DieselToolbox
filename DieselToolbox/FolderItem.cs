@@ -33,7 +33,7 @@ namespace DieselToolbox
 
         public string Type
         {
-            get { return "File Folder"; }
+            get { return Definitions.FolderTypeName; }
         }
 
         public Icon Icon
@@ -101,10 +101,10 @@ namespace DieselToolbox
 
         public void AddFileEntry(FileEntry entry)
         {
-            string[] path_parts = entry._path.UnHashedParts;
-            if (path_parts.Length > (folderLevel + 1))
+            int[] path_parts = entry._path.UnHashedParts;
+            if (path_parts != null && path_parts.Length > (folderLevel + 1))
             {
-                string initial_folder = path_parts[folderLevel];
+                string initial_folder = HashIndex.LookupString(path_parts[folderLevel]);
                 if (!_children.ContainsKey(initial_folder))
                 {
                     FolderItem folder = new FolderItem(entry, folderLevel + 1)
@@ -116,8 +116,7 @@ namespace DieselToolbox
                     folder.Path = "assets";
                     for (int i = 0; i <= folderLevel; i++)
                     {
-                        string path_part = path_parts[i];
-                        System.IO.Path.Combine(folder.Path, path_part);
+                        System.IO.Path.Combine(folder.Path, HashIndex.LookupString(path_parts[i]));
                     }
                     folder.Name = initial_folder;
                     this._children.Add(initial_folder, folder);
