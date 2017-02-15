@@ -36,11 +36,11 @@ public class HeistExtractor
     private Dictionary<string, Action<FileEntry>> FileProcessors;
     private StreamWriter error_output;
 
-    private string heist_world = "levels/bridge/world.world";
+    private string heist_world = "levels/bridge/world";
 
     public HeistExtractor()
     {
-        FileProcessors = new Dictionary<string, Action<FileEntry>> {
+        this.FileProcessors = new Dictionary<string, Action<FileEntry>> {
             { "unit", ProcessUnit },
             { "object", ProcessObject },
             { "material_config", ProcessMaterialConfig },
@@ -63,35 +63,37 @@ public class HeistExtractor
 
     private string OutputPath = "D:/Test Output Green Bridge";
 
-    private HashSet<string> ExtractedPaths; 
+    private HashSet<Idstring> ExtractedPaths; 
 
     public void execute(PackageBrowser browser)
     {
-        ExtractedPaths = new HashSet<string>();
+        this.ExtractedPaths = new HashSet<Idstring>();
 
-        error_output = new StreamWriter("./heist_extractor.log");
+        this.error_output = new StreamWriter("./heist_extractor.log");
 
-        _browser = browser;
+        this._browser = browser;
         System.Diagnostics.Stopwatch clock = new System.Diagnostics.Stopwatch();
         clock.Start();
-        error_output.Write("Heist Extractor executed" + "\n");
-        error_output.Flush();
-
-        if (browser.RawFiles.ContainsKey(heist_world))
+        this.error_output.Write("Heist Extractor executed" + "\n");
+        this.error_output.Flush();
+        Idstring ids = HashIndex.Get(this.heist_world);
+        Idstring ids_ext = HashIndex.Get("world");
+        var tids = new Tuple<Idstring, Idstring, Idstring>(ids, new Idstring(0), ids_ext);
+        if (browser.RawFiles.ContainsKey(tids))
         {
-            this.ProcessWorld(browser.RawFiles[heist_world]);
+            this.ProcessWorld(browser.RawFiles[tids]);
         }
         else
             Console.WriteLine("World File does not exist");
 
         //this.ProcessFolder(browser.Root);
         //Path.Combine(Definitions.HashDir, hashlist_tag)
-        using (StreamWriter str = new StreamWriter(new FileStream(Path.Combine(OutputPath, "add.xml"), FileMode.Create, FileAccess.Write)))
+        using (StreamWriter str = new StreamWriter(new FileStream(Path.Combine(this.OutputPath, "add.xml"), FileMode.Create, FileAccess.Write)))
         {
             str.Write("<table>\n");
-            foreach(string path in ExtractedPaths)
+            foreach(Idstring path in this.ExtractedPaths)
             {
-                string[] split = path.Split('.');
+                string[] split = path.ToString().Split('.');
                 str.Write(String.Format("\t<{0} path=\"{1}\" force=\"true\"/>\n", split[1], split[0]));
             }
 
@@ -99,8 +101,8 @@ public class HeistExtractor
         }
 
         clock.Stop();
-        error_output.Write("Scrape operation took {0} seconds" + "\n", clock.Elapsed.TotalSeconds.ToString());
-        error_output.Close();
+        this.error_output.Write("Scrape operation took {0} seconds" + "\n", clock.Elapsed.TotalSeconds.ToString());
+        this.error_output.Close();
     }
 
     /*private void ProcessFolder(IParent folder)
@@ -116,7 +118,8 @@ public class HeistExtractor
 
     private void WriteFile(FileEntry entry, byte[] byt = null)
     {
-        if (entry.BundleEntries.Count == 0 || this.ExtractedPaths.Contains(entry.Path))
+        Idstring ids = HashIndex.Get(entry.Path);
+        if (entry.BundleEntries.Count == 0 || this.ExtractedPaths.Contains(ids))
             return;
 
         string path = Path.Combine(this.OutputPath, entry.Path);
@@ -127,7 +130,7 @@ public class HeistExtractor
         byte[] bytes = byt ?? entry.FileBytes() ?? new byte[0];
 
         File.WriteAllBytes(path, bytes);
-        this.ExtractedPaths.Add(entry.Path);
+        this.ExtractedPaths.Add(ids);
     }
 
     private void ProcessWorld(FileEntry file)
@@ -145,10 +148,12 @@ public class HeistExtractor
             new XMLTagLookup { node_name="environment_values", value=new[]{"environment" }, Converter = (hash) => { return hash + ".environment"; } }
         });
 
-        string continents_file = Path.Combine(Path.GetDirectoryName(file.Path), "continents.continents").Replace("\\", "/");
-        if (this._browser.RawFiles.ContainsKey(continents_file))
+        string continents_file = Path.Combine(Path.GetDirectoryName(file.Path), "continents").Replace("\\", "/");
+        Idstring ids = HashIndex.Get(continents_file);
+        var t_ids = new Tuple<Idstring, Idstring, Idstring>(ids, new Idstring(0), HashIndex.Get("continents"));
+        if (this._browser.RawFiles.ContainsKey(t_ids))
         {
-            FileEntry c_file = this._browser.RawFiles[continents_file];
+            FileEntry c_file = this._browser.RawFiles[t_ids];
             this.WriteFile(c_file);
 
             string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(c_file.FileStream(), true);
@@ -165,22 +170,24 @@ public class HeistExtractor
             }
             catch (Exception exc)
             {
-                error_output.Write("Exception occured on file: {0}\n", c_file.Path);
+                this.error_output.Write("Exception occured on file: {0}\n", c_file.Path);
                 if (xml != null)
-                    error_output.Write(xml + "\n");
-                error_output.Write(exc.Message + "\n");
-                error_output.Write(exc.StackTrace + "\n");
-                error_output.Flush();
+                    this.error_output.Write(xml + "\n");
+                this.error_output.Write(exc.Message + "\n");
+                this.error_output.Write(exc.StackTrace + "\n");
+                this.error_output.Flush();
                 return;
             }
         }
         else
-            error_output.Write("Continents file {0} does not exist!\n", continents_file);
+            this.error_output.Write("Continents file {0} does not exist!\n", continents_file);
 
-        string mission_file = Path.Combine(Path.GetDirectoryName(file.Path), "mission.mission").Replace("\\", "/");
-        if (this._browser.RawFiles.ContainsKey(mission_file))
+        string mission_file = Path.Combine(Path.GetDirectoryName(file.Path), "mission").Replace("\\", "/");
+        Idstring m_ids = HashIndex.Get(mission_file);
+        var t_m_ids = new Tuple<Idstring, Idstring, Idstring>(m_ids, new Idstring(0), HashIndex.Get("mission"));
+        if (this._browser.RawFiles.ContainsKey(t_m_ids))
         {
-            FileEntry m_file = this._browser.RawFiles[mission_file];
+            FileEntry m_file = this._browser.RawFiles[t_m_ids];
             this.WriteFile(m_file);
 
             string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(m_file.FileStream(), true);
@@ -197,61 +204,67 @@ public class HeistExtractor
             }
             catch (Exception exc)
             {
-                error_output.Write("Exception occured on file: {0}\n", m_file.Path);
+                this.error_output.Write("Exception occured on file: {0}\n", m_file.Path);
                 if (xml != null)
-                    error_output.Write(xml + "\n");
-                error_output.Write(exc.Message + "\n");
-                error_output.Write(exc.StackTrace + "\n");
-                error_output.Flush();
+                    this.error_output.Write(xml + "\n");
+                this.error_output.Write(exc.Message + "\n");
+                this.error_output.Write(exc.StackTrace + "\n");
+                this.error_output.Flush();
                 return;
             }
         }
         else
-            error_output.Write("Mission file {0} does not exist!\n", continents_file);
+            this.error_output.Write("Mission file {0} does not exist!\n", continents_file);
 
-        error_output.Flush();
+        this.error_output.Flush();
     }
 
     private void ProcessFile(string path)
     {
-        if (!this._browser.RawFiles.ContainsKey(path))
+        Idstring p_ids = HashIndex.Get(Path.GetFileNameWithoutExtension(path));
+        var t_ids = new Tuple<Idstring, Idstring, Idstring>(p_ids, new Idstring(0), HashIndex.Get(Path.GetExtension(path)));
+        if (!this._browser.RawFiles.ContainsKey(t_ids))
         {
-            error_output.Write(string.Format("File with path {0} does not exist!\n", path));
-            error_output.Flush();
+            this.error_output.Write(string.Format("File with path {0} does not exist!\n", path));
+            this.error_output.Flush();
             return;
         }
-        FileEntry file = this._browser.RawFiles[path];
+        FileEntry file = this._browser.RawFiles[t_ids];
 
-        if (file.BundleEntries.Count == 0 || this.ExtractedPaths.Contains(path))
+        if (file.BundleEntries.Count == 0 || this.ExtractedPaths.Contains(p_ids))
             return;
 
         try
         {
             if (Path.GetExtension(path) == ".object")
             {
-                string model_file = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".model").Replace("\\", "/");
+                string model_file = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)).Replace("\\", "/");
+                Idstring m_ids = HashIndex.Get(model_file);
                 //error_output.WriteLine(string.Format("Attempt to ouput model file {0}", model_file));
-                if (this._browser.RawFiles.ContainsKey(model_file))
-                    this.WriteFile(this._browser.RawFiles[model_file]);
+                var t_m_ids = new Tuple<Idstring, Idstring, Idstring>(m_ids, new Idstring(0), HashIndex.Get("model"));
+                if (this._browser.RawFiles.ContainsKey(t_m_ids))
+                    this.WriteFile(this._browser.RawFiles[t_m_ids]);
 
-                string cooked_physics = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + ".cooked_physics").Replace("\\", "/");
+                string cooked_physics = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path)).Replace("\\", "/");
+                Idstring c_ids = HashIndex.Get(cooked_physics);
+                var t_c_ids = new Tuple<Idstring, Idstring, Idstring>(c_ids, new Idstring(0), HashIndex.Get("cooked_physics"));
                 //error_output.WriteLine(string.Format("Attempt to ouput cooked_physics file {0}", cooked_physics));
-                if (this._browser.RawFiles.ContainsKey(cooked_physics))
-                    this.WriteFile(this._browser.RawFiles[cooked_physics]);
+                if (this._browser.RawFiles.ContainsKey(t_c_ids))
+                    this.WriteFile(this._browser.RawFiles[t_c_ids]);
             }
 
-            if (FileProcessors.ContainsKey(file._extension.ToString()))
-                FileProcessors[file._extension.ToString()].Invoke(file);
+            if (this.FileProcessors.ContainsKey(file._extension.ToString()))
+                this.FileProcessors[file._extension.ToString()].Invoke(file);
             else
                 this.WriteFile(file);
 
         }
         catch (Exception exc)
         {
-            error_output.Write("Exception occured on file: {0}\n", file.Path);
-            error_output.Write(exc.Message + "\n");
-            error_output.Write(exc.StackTrace + "\n");
-            error_output.Flush();
+            this.error_output.Write("Exception occured on file: {0}\n", file.Path);
+            this.error_output.Write(exc.Message + "\n");
+            this.error_output.Write(exc.StackTrace + "\n");
+            this.error_output.Flush();
         }
     }
 
@@ -277,12 +290,12 @@ public class HeistExtractor
         }
         catch (Exception exc)
         {
-            error_output.Write("Exception occured on file: {0}\n", file.Path);
+            this.error_output.Write("Exception occured on file: {0}\n", file.Path);
             if (xml != null)
-                error_output.Write(xml + "\n");
-            error_output.Write(exc.Message + "\n");
-            error_output.Write(exc.StackTrace + "\n");
-            error_output.Flush();
+                this.error_output.Write(xml + "\n");
+            this.error_output.Write(exc.Message + "\n");
+            this.error_output.Write(exc.StackTrace + "\n");
+            this.error_output.Flush();
             return;
         }
         foreach (XMLTagLookup tag in attribute_tags)

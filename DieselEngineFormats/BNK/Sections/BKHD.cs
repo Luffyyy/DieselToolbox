@@ -12,11 +12,11 @@ namespace DieselEngineFormats.BNK.Sections
         private uint BKHD_tag = 0x44484B42;
 
         public long offset;
-        public UInt32 length;
-        public UInt32 soundbank_version;
-        public UInt32 soundbank_id;
-        public UInt32 unknown1;
-        public UInt32 unknown2;
+        public uint length;
+        public uint soundbank_version;
+        public uint soundbank_id;
+        public uint unknown1;
+        public uint unknown2;
 
         public byte[] remaining_data = null;
 

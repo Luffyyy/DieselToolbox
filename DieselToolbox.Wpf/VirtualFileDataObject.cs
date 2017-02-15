@@ -70,7 +70,7 @@ namespace DieselToolbox
         /// </summary>
         public VirtualFileDataObject()
         {
-            IsAsynchronous = true;
+            this.IsAsynchronous = true;
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace DieselToolbox
         public VirtualFileDataObject(Action<VirtualFileDataObject> startAction, Action<VirtualFileDataObject> endAction)
             : this()
         {
-            _startAction = startAction;
-            _endAction = endAction;
+            this._startAction = startAction;
+            this._endAction = endAction;
         }
 
         #region IDataObject Members
@@ -136,7 +136,7 @@ namespace DieselToolbox
         {
             if (direction == DATADIR.DATADIR_GET)
             {
-                if (0 == _dataObjects.Count)
+                if (0 == this._dataObjects.Count)
                 {
                     // Note: SHCreateStdEnumFmtEtc fails for a count of 0; throw helpful exception
                     throw new InvalidOperationException("VirtualFileDataObject requires at least one data object to enumerate.");
@@ -144,7 +144,7 @@ namespace DieselToolbox
 
                 // Create enumerator and return it
                 IEnumFORMATETC enumerator;
-                if (NativeMethods.SUCCEEDED(NativeMethods.SHCreateStdEnumFmtEtc((uint)(_dataObjects.Count), _dataObjects.Select(d => d.FORMATETC).ToArray(), out enumerator)))
+                if (NativeMethods.SUCCEEDED(NativeMethods.SHCreateStdEnumFmtEtc((uint)(this._dataObjects.Count), this._dataObjects.Select(d => d.FORMATETC).ToArray(), out enumerator)))
                 {
                     return enumerator;
                 }
@@ -180,7 +180,7 @@ namespace DieselToolbox
             {
                 // Find the best match
                 var formatCopy = format; // Cannot use ref or out parameter inside an anonymous method, lambda expression, or query expression
-                var dataObject = _dataObjects.Where(d => (
+                var dataObject = this._dataObjects.Where(d => (
                     (d.FORMATETC.cfFormat == formatCopy.cfFormat) &&
                     (d.FORMATETC.dwAspect == formatCopy.dwAspect) &&
                     (0 != (d.FORMATETC.tymed & formatCopy.tymed) &&
@@ -188,13 +188,13 @@ namespace DieselToolbox
                 //Console.WriteLine(dataObject?.ToString());
                 if (dataObject != null)
                 {
-                    if (!IsAsynchronous && (FILEDESCRIPTORW == dataObject.FORMATETC.cfFormat) && !_inOperation)
+                    if (!this.IsAsynchronous && (FILEDESCRIPTORW == dataObject.FORMATETC.cfFormat) && !this._inOperation)
                     {
                         // Enter the operation and call the start action
-                        _inOperation = true;
-                        if (null != _startAction)
+                        this._inOperation = true;
+                        if (null != this._startAction)
                         {
-                            _startAction(this);
+                            this._startAction(this);
                         }
                     }
 
@@ -237,7 +237,7 @@ namespace DieselToolbox
         int System.Runtime.InteropServices.ComTypes.IDataObject.QueryGetData(ref FORMATETC format)
         {
             var formatCopy = format; // Cannot use ref or out parameter inside an anonymous method, lambda expression, or query expression
-            var formatMatches = _dataObjects.Where(d => d.FORMATETC.cfFormat == formatCopy.cfFormat);
+            var formatMatches = this._dataObjects.Where(d => d.FORMATETC.cfFormat == formatCopy.cfFormat);
             if (!formatMatches.Any())
             {
                 return NativeMethods.DV_E_FORMATETC;
@@ -296,14 +296,14 @@ namespace DieselToolbox
             }
 
             // Handle synchronous mode
-            if (!IsAsynchronous && (PERFORMEDDROPEFFECT == formatIn.cfFormat) && _inOperation)
+            if (!this.IsAsynchronous && (PERFORMEDDROPEFFECT == formatIn.cfFormat) && this._inOperation)
             {
                 // Call the end action and exit the operation
-                if (null != _endAction)
+                if (null != this._endAction)
                 {
-                    _endAction(this);
+                    this._endAction(this);
                 }
-                _inOperation = false;
+                this._inOperation = false;
             }
 
             // Throw if unhandled
@@ -322,7 +322,7 @@ namespace DieselToolbox
         /// <param name="data">Sequence of data.</param>
         public void SetData(short dataFormat, IEnumerable<byte> data)
         {
-            _dataObjects.Add(
+            this._dataObjects.Add(
                 new DataObject
                 {
                     FORMATETC = new FORMATETC
@@ -355,7 +355,7 @@ namespace DieselToolbox
         /// </remarks>
         public void SetData(short dataFormat, int index, Func<MemoryStream> streamData)
         {
-            _dataObjects.Add(
+            this._dataObjects.Add(
                 new DataObject
                 {
                     FORMATETC = new FORMATETC
@@ -443,7 +443,7 @@ namespace DieselToolbox
         public DragDropEffects? PasteSucceeded
         {
             get { return GetDropEffect(PASTESUCCEEDED); }
-            set { SetData(PASTESUCCEEDED, BitConverter.GetBytes((UInt32)value)); }
+            set { SetData(PASTESUCCEEDED, BitConverter.GetBytes((uint)value)); }
         }
 
         /// <summary>
@@ -452,7 +452,7 @@ namespace DieselToolbox
         public DragDropEffects? PerformedDropEffect
         {
             get { return GetDropEffect(PERFORMEDDROPEFFECT); }
-            set { SetData(PERFORMEDDROPEFFECT, BitConverter.GetBytes((UInt32)value)); }
+            set { SetData(PERFORMEDDROPEFFECT, BitConverter.GetBytes((uint)value)); }
         }
 
         /// <summary>
@@ -461,7 +461,7 @@ namespace DieselToolbox
         public DragDropEffects? PreferredDropEffect
         {
             get { return GetDropEffect(PREFERREDDROPEFFECT); }
-            set { SetData(PREFERREDDROPEFFECT, BitConverter.GetBytes((UInt32)value)); }
+            set { SetData(PREFERREDDROPEFFECT, BitConverter.GetBytes((uint)value)); }
         }
 
         /// <summary>
@@ -473,7 +473,7 @@ namespace DieselToolbox
         private DragDropEffects? GetDropEffect(short format)
         {
             // Get the most recent setting
-            var dataObject = _dataObjects
+            var dataObject = this._dataObjects
                 .Where(d =>
                     (format == d.FORMATETC.cfFormat) &&
                     (DVASPECT.DVASPECT_CONTENT == d.FORMATETC.dwAspect) &&
@@ -517,7 +517,7 @@ namespace DieselToolbox
         /// <param name="fDoOpAsync">A Boolean value that is set to VARIANT_TRUE to indicate that an asynchronous operation is supported, or VARIANT_FALSE otherwise.</param>
         void IAsyncOperation.SetAsyncMode(int fDoOpAsync)
         {
-            IsAsynchronous = !(NativeMethods.VARIANT_FALSE == fDoOpAsync);
+            this.IsAsynchronous = !(NativeMethods.VARIANT_FALSE == fDoOpAsync);
         }
 
         /// <summary>
@@ -526,7 +526,7 @@ namespace DieselToolbox
         /// <param name="pfIsOpAsync">A Boolean value that is set to VARIANT_TRUE to indicate that an asynchronous operation is supported, or VARIANT_FALSE otherwise.</param>
         void IAsyncOperation.GetAsyncMode(out int pfIsOpAsync)
         {
-            pfIsOpAsync = IsAsynchronous ? NativeMethods.VARIANT_TRUE : NativeMethods.VARIANT_FALSE;
+            pfIsOpAsync = this.IsAsynchronous ? NativeMethods.VARIANT_TRUE : NativeMethods.VARIANT_FALSE;
         }
 
         /// <summary>
@@ -535,10 +535,10 @@ namespace DieselToolbox
         /// <param name="pbcReserved">Reserved. Set this value to NULL.</param>
         void IAsyncOperation.StartOperation(IBindCtx pbcReserved)
         {
-            _inOperation = true;
-            if (null != _startAction)
+            this._inOperation = true;
+            if (null != this._startAction)
             {
-                _startAction(this);
+                this._startAction(this);
             }
         }
 
@@ -548,7 +548,7 @@ namespace DieselToolbox
         /// <param name="pfInAsyncOp">Set to VARIANT_TRUE if data extraction is being handled asynchronously, or VARIANT_FALSE otherwise.</param>
         void IAsyncOperation.InOperation(out int pfInAsyncOp)
         {
-            pfInAsyncOp = _inOperation ? NativeMethods.VARIANT_TRUE : NativeMethods.VARIANT_FALSE;
+            pfInAsyncOp = this._inOperation ? NativeMethods.VARIANT_TRUE : NativeMethods.VARIANT_FALSE;
         }
 
         /// <summary>
@@ -559,11 +559,11 @@ namespace DieselToolbox
         /// <param name="dwEffects">A DROPEFFECT value that indicates the result of an optimized move. This should be the same value that would be passed to the data object as a CFSTR_PERFORMEDDROPEFFECT format with a normal data extraction operation.</param>
         void IAsyncOperation.EndOperation(int hResult, IBindCtx pbcReserved, uint dwEffects)
         {
-            if (null != _endAction)
+            if (null != this._endAction)
             {
-                _endAction(this);
+                this._endAction(this);
             }
-            _inOperation = false;
+            this._inOperation = false;
         }
 
         #endregion
@@ -663,8 +663,8 @@ namespace DieselToolbox
             /// <param name="item2">The value of the tuple's second component.</param>
             public Tuple(T1 item1, T2 item2)
             {
-                Item1 = item1;
-                Item2 = item2;
+                this.Item1 = item1;
+                this.Item2 = item2;
             }
         }
 
@@ -770,7 +770,7 @@ namespace DieselToolbox
             [StructLayout(LayoutKind.Sequential)]
             public struct FILEGROUPDESCRIPTOR
             {
-                public UInt32 cItems;
+                public uint cItems;
                 // Followed by 0 or more FILEDESCRIPTORs
             }
 
@@ -778,18 +778,18 @@ namespace DieselToolbox
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct FILEDESCRIPTOR
             {
-                public UInt32 dwFlags;
+                public uint dwFlags;
                 public Guid clsid;
                 public int sizelcx;
                 public int sizelcy;
                 public int pointlx;
                 public int pointly;
-                public UInt32 dwFileAttributes;
+                public uint dwFileAttributes;
                 public System.Runtime.InteropServices.ComTypes.FILETIME ftCreationTime;
                 public System.Runtime.InteropServices.ComTypes.FILETIME ftLastAccessTime;
                 public System.Runtime.InteropServices.ComTypes.FILETIME ftLastWriteTime;
-                public UInt32 nFileSizeHigh;
-                public UInt32 nFileSizeLow;
+                public uint nFileSizeHigh;
+                public uint nFileSizeLow;
                 [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
                 public string cFileName;
             }
@@ -853,7 +853,7 @@ namespace DieselToolbox
         void GetAsyncMode([Out] out int pfIsOpAsync);
         void StartOperation([In] IBindCtx pbcReserved);
         void InOperation([Out] out int pfInAsyncOp);
-        void EndOperation([In] int hResult, [In] IBindCtx pbcReserved, [In] UInt32 dwEffects);
+        void EndOperation([In] int hResult, [In] IBindCtx pbcReserved, [In] uint dwEffects);
     }
 
     class ManagedIStream : IStream
@@ -862,7 +862,7 @@ namespace DieselToolbox
 
         public ManagedIStream(Stream stream)
         {
-            _stream = stream;
+            this._stream = stream;
         }
 
         public void Clone(out IStream ppstm)
@@ -887,7 +887,7 @@ namespace DieselToolbox
 
         public void Read(byte[] pv, int cb, IntPtr pcbRead)
         {
-            int read = _stream.Read(pv, 0, cb);
+            int read = this._stream.Read(pv, 0, cb);
             if (pcbRead != IntPtr.Zero)
             {
                 Marshal.WriteInt32(pcbRead, read);
@@ -901,7 +901,7 @@ namespace DieselToolbox
 
         public void Seek(long dlibMove, int dwOrigin, IntPtr plibNewPosition)
         {
-            long newPos = _stream.Seek(dlibMove, (SeekOrigin)dwOrigin);
+            long newPos = this._stream.Seek(dlibMove, (SeekOrigin)dwOrigin);
             if (plibNewPosition != IntPtr.Zero)
             {
                 Marshal.WriteInt64(plibNewPosition, newPos);
@@ -910,7 +910,7 @@ namespace DieselToolbox
 
         public void SetSize(long libNewSize)
         {
-            _stream.SetLength(libNewSize);
+            this._stream.SetLength(libNewSize);
         }
 
         public void Stat(out System.Runtime.InteropServices.ComTypes.STATSTG pstatstg, int grfStatFlag)
@@ -918,24 +918,24 @@ namespace DieselToolbox
             const int STGTY_STREAM = 2;
             pstatstg = new System.Runtime.InteropServices.ComTypes.STATSTG();
             pstatstg.type = STGTY_STREAM;
-            pstatstg.cbSize = _stream.Length;
+            pstatstg.cbSize = this._stream.Length;
             pstatstg.grfMode = 0;
 
-            if (_stream.CanRead && _stream.CanWrite)
+            if (this._stream.CanRead && this._stream.CanWrite)
             {
                 const int STGM_READWRITE = 0x00000002;
                 pstatstg.grfMode |= STGM_READWRITE;
                 return;
             }
 
-            if (_stream.CanRead)
+            if (this._stream.CanRead)
             {
                 const int STGM_READ = 0x00000000;
                 pstatstg.grfMode |= STGM_READ;
                 return;
             }
 
-            if (_stream.CanWrite)
+            if (this._stream.CanWrite)
             {
                 const int STGM_WRITE = 0x00000001;
                 pstatstg.grfMode |= STGM_WRITE;
@@ -952,7 +952,7 @@ namespace DieselToolbox
 
         public void Write(byte[] pv, int cb, IntPtr pcbWritten)
         {
-            _stream.Write(pv, 0, cb);
+            this._stream.Write(pv, 0, cb);
             if (pcbWritten != IntPtr.Zero)
             {
                 Marshal.WriteInt32(pcbWritten, cb);

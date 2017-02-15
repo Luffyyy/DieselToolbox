@@ -9,9 +9,9 @@ namespace DieselEngineFormats.BNK.Sections
 {
     class Unknown
     {
-        public UInt32 tag;
+        public uint tag;
         public long offset;
-        public UInt32 length;
+        public uint length;
         public byte[] data = null;
 
         public Unknown(BinaryReader instream)

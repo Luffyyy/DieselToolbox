@@ -13,7 +13,7 @@ namespace DieselEngineFormats.BNK.Sections
         private uint DATA_tag = 0x41544144;
         public long offset;
 
-        public UInt32 length;
+        public uint length;
         public Dictionary<uint, byte[]> files = new Dictionary<uint, byte[]>();
 
         public byte[] remaining_data = null;
@@ -24,23 +24,23 @@ namespace DieselEngineFormats.BNK.Sections
             this.length = instream.ReadUInt32();
             this.offset = instream.BaseStream.Position;
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("DATA - YOU READ TOO MUCH!!!");
             }
 
         }
 
-        public Dictionary<uint, UInt32> GenerateFileData()
+        public Dictionary<uint, uint> GenerateFileData()
         {
-            if (files.Count == 0)
+            if (this.files.Count == 0)
                 return null;
 
-            Dictionary<uint, UInt32> offsets = new Dictionary<uint, UInt32>();
+            Dictionary<uint, uint> offsets = new Dictionary<uint, uint>();
             List<byte> newData = new List<byte>();
 
             uint currentOffset = 0;
@@ -81,7 +81,7 @@ namespace DieselEngineFormats.BNK.Sections
 
         public override string ToString()
         {
-            return "[DATA] offset: " + this.offset + " length: " + this.length + " files count: " + files.Count + (this.remaining_data != null ? " REMAINING DATA! " + this.remaining_data.Length + " bytes" : "");
+            return "[DATA] offset: " + this.offset + " length: " + this.length + " files count: " + this.files.Count + (this.remaining_data != null ? " REMAINING DATA! " + this.remaining_data.Length + " bytes" : "");
         }
     }
 }

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Panel
+  xmlns="http://schema.picoe.ca/eto.forms" 
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  ClientSize="800, 25"
+  >
+	<TableLayout x:Name="tblMain" Spacing="2,2">
+    <TableRow ScaleHeight="True">
+      <TableCell ScaleWidth="False">
+        <StackLayout Orientation="Horizontal" Spacing="1" Padding="1,1,0,1" VerticalContentAlignment="Stretch">
+          <Button x:Name="btnBack" SizeChanged="btnSizeChanged" Click="btnBack_Click">&lt;</Button>
+          <Button x:Name="btnForward" SizeChanged="btnSizeChanged" Click="btnForward_Click">&gt;</Button>
+        </StackLayout>
+      </TableCell>
+          
+      <TableCell ScaleWidth="True">
+        <Panel Padding="0,1,1,1">
+           <!--<Scrollable x:Name="scrllPath" ExpandContentWidth="True">-->
+            <StackLayout x:Name="stckPath" BackgroundColor="White" Padding="1" Spacing="1" Orientation="Horizontal">
+            
+            </StackLayout>
+          <!--</Scrollable>-->
+        </Panel>
+      </TableCell>
+    </TableRow>
+  </TableLayout>
+</Panel>

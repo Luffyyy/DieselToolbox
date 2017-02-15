@@ -1,10 +1,13 @@
-﻿using System;
+﻿#pragma warning disable CS0649
+
+using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
 using Eto.Serialization.Xaml;
 using DieselEngineFormats;
 using DieselEngineFormats.Bundle;
+using System.IO;
 
 namespace DieselToolbox
 {
@@ -18,10 +21,10 @@ namespace DieselToolbox
 
 		public StringsFile Strings
 		{
-			get { return _strings; }
+			get { return this._strings; }
 			set
 			{
-				_strings = value;
+                this._strings = value;
 				this.grdStrings.DataStore = value.LocalizationStrings;
 			}
 		}
@@ -29,15 +32,15 @@ namespace DieselToolbox
 		public StringViewer ()
 		{
 			XamlReader.Load (this);
-			//this.InitScripts ();
+            //this.InitScripts ();
 
-			grdStrings.Columns.Add (new GridColumn{
-				DataCell = new TextBoxCell{ Binding = Binding.Property<StringEntry, string>(r => r.ID.ToString())
+            this.grdStrings.Columns.Add (new GridColumn{
+				DataCell = new TextBoxCell{ Binding = Binding.Delegate<StringEntry, string>(r => (r.ID.HasUnHashed ? "" : "0x") + r.ID.ToString())
 				},
 				HeaderText = "ID"
 			});
 
-			grdStrings.Columns.Add (new GridColumn{
+            this.grdStrings.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{ Binding = Binding.Property<StringEntry, string>(r => r.Text)
 				},
 				HeaderText = "Text"
@@ -48,6 +51,16 @@ namespace DieselToolbox
 		{
 			this.Strings = strFile;
 		}
+
+        public StringViewer(string file) : this()
+        {
+            this.Strings = new StringsFile(file);
+        }
+
+        public StringViewer(Stream str) :this()
+        {
+            this.Strings = new StringsFile(str);
+        }
 
 		/*public void InitScripts()
 		{
@@ -149,7 +162,7 @@ namespace DieselToolbox
 
 			if (strEntry != null)
 			{
-				this.txtID.Text = strEntry.ID.ToString();
+				this.txtID.Text = (strEntry.ID.HasUnHashed ? "" : "0x") + strEntry.ID.ToString();
 				this.txtText.Text = strEntry.Text;
 			}
 		}

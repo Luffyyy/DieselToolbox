@@ -9,9 +9,9 @@ namespace DieselEngineFormats.BNK.Sections
 {
     class DIDX_object
     {
-        public UInt32 id;
-        public UInt32 data_offset;
-        public UInt32 data_length;
+        public uint id;
+        public uint data_offset;
+        public uint data_length;
 
         public DIDX_object(BinaryReader instream)
         {
@@ -33,7 +33,7 @@ namespace DieselEngineFormats.BNK.Sections
         private uint DIDX_tag = 0x58444944;
 
         public long offset;
-        public UInt32 length;
+        public uint length;
         public List<DIDX_object> objects = new List<DIDX_object>();
 
         public byte[] remaining_data = null;
@@ -43,7 +43,7 @@ namespace DieselEngineFormats.BNK.Sections
             this.length = instream.ReadUInt32();
             this.offset = instream.BaseStream.Position;
 
-            while (instream.BaseStream.Position - offset < this.length)
+            while (instream.BaseStream.Position - this.offset < this.length)
                 this.objects.Add(new DIDX_object(instream));
 
             if (instream.BaseStream.Position - this.offset < this.length)

@@ -16,34 +16,33 @@ namespace DieselToolbox
     {
         public class TempFile : IDisposable
         {
-            public TempFile(FileEntry entry, BundleFileEntry be = null, dynamic exporter = null)
+            public TempFile(FileEntry entry, PackageFileEntry be = null, dynamic exporter = null)
             {
-                Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Definitions.TempDir, entry.Name);
+                this.Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Definitions.TempDir, $"{entry._path.HashedString}.{entry._extension.ToString()}");
 
                 if (exporter?.extension != null)
-                    Path += "." + exporter.extension;
+                    this.Path += "." + exporter.extension;
 
-                var file_data = entry.FileData(be, exporter);
+                object file_data = entry.FileData(be, exporter);
 
                 if (file_data is byte[])
                 {
-                    File.WriteAllBytes(Path, file_data);
+                    File.WriteAllBytes(this.Path, (byte[])file_data);
                 }
                 else if (file_data is Stream)
                 {
-                    using (FileStream file_stream = File.Create(Path))
+                    using (FileStream file_stream = File.Create(this.Path))
                         ((Stream)file_data).CopyTo(file_stream);
 
                     ((Stream)file_data).Close();
                 }
                 else if (file_data is string)
-                    File.WriteAllText(Path, file_data);
+                    File.WriteAllText(this.Path, (string)file_data);
                 else if (file_data is string[])
-                    File.WriteAllLines(Path, file_data);
+                    File.WriteAllLines(this.Path, (string[])file_data);
 
-                Entry = be;
-                ExporterKey = exporter?.key;
-                file_data = null;
+                this.Entry = be;
+                this.ExporterKey = exporter?.key;
             }
 
             ~TempFile()
@@ -55,7 +54,7 @@ namespace DieselToolbox
 
             public Process RunProcess { get; set; }
 
-            public BundleFileEntry Entry { get; set; }
+            public PackageFileEntry Entry { get; set; }
 
             public string ExporterKey { get; set; }
 
@@ -69,13 +68,13 @@ namespace DieselToolbox
                 try
                 {
 
-                    if (!(RunProcess?.HasExited ?? true))
-                        RunProcess?.Kill();
+                    if (!(this.RunProcess?.HasExited ?? true))
+                        this.RunProcess?.Kill();
 
-                    if (File.Exists(Path))
-                        File.Delete(Path);
+                    if (File.Exists(this.Path))
+                        File.Delete(this.Path);
 
-                    Console.WriteLine("Deleted temp file {0}", Path);
+                    Console.WriteLine("Deleted temp file {0}", this.Path);
 
                 }
                 catch (Exception exc){
@@ -94,8 +93,8 @@ namespace DieselToolbox
 
         public FileViewerManager()
         {
-            Timer = new UITimer { Interval = 30 };
-            Timer.Elapsed += Update;
+            this.Timer = new UITimer { Interval = 30 };
+            this.Timer.Elapsed += this.Update;
             //Timer.Start();
             string temp_path;
 
@@ -143,11 +142,11 @@ namespace DieselToolbox
 
         private void Update(object sender, EventArgs e)
         {
-            if (TempFiles.Count == 0)
+            if (this.TempFiles.Count == 0)
                 return;
 
             List<FileEntry> to_delete = new List<FileEntry>();
-            foreach (KeyValuePair<FileEntry, TempFile> temp in TempFiles)
+            foreach (KeyValuePair<FileEntry, TempFile> temp in this.TempFiles)
             {
                 if (this.IsFileAvailable(temp.Value.Path))
                     to_delete.Add(temp.Key);
@@ -159,7 +158,7 @@ namespace DieselToolbox
             }
         }
 
-        public void ViewFile(FileEntry entry, BundleFileEntry be = null)
+        public void ViewFile(FileEntry entry, PackageFileEntry be = null)
         {
             try
             {
@@ -181,23 +180,24 @@ namespace DieselToolbox
 
                 //Thread thread = new Thread(() =>
                 //{
-                    TempFile temp = this.GetTempFile(entry, be, exporter);
-                    //{
-                        ProcessStartInfo pi = new ProcessStartInfo(temp.Path);
+                TempFile temp = this.GetTempFile(entry, be, exporter);
+                //{
+                GC.Collect();
+                ProcessStartInfo pi = new ProcessStartInfo(temp.Path);
                 
-                        pi.UseShellExecute = true;
-                        if (General.IsLinux)
-                        {
-                            pi.Arguments = temp.Path;
-                            pi.FileName = "xdg-open";
-                        }
-                        else
-                            pi.FileName = temp.Path;
+                pi.UseShellExecute = true;
+                if (General.IsLinux)
+                {
+                    pi.Arguments = temp.Path;
+                    pi.FileName = "xdg-open";
+                }
+                else
+                    pi.FileName = temp.Path;
 
-                        Process proc = Process.Start(pi);
-                        //temp.RunProcess = proc;
-                        if (!this.TempFiles.ContainsKey(entry))
-                            this.TempFiles.Add(entry, temp);
+                Process proc = Process.Start(pi);
+                //temp.RunProcess = proc;
+                if (!this.TempFiles.ContainsKey(entry))
+                    this.TempFiles.Add(entry, temp);
                         /*if (proc == null)//seconds -> milliseconds
                             Thread.Sleep(20 * 1000);
                         proc?.WaitForExit();
@@ -225,7 +225,7 @@ namespace DieselToolbox
             }
         }
 
-        public TempFile CreateTempFile(FileEntry entry, BundleFileEntry be = null, dynamic exporter = null)
+        public TempFile CreateTempFile(FileEntry entry, PackageFileEntry be = null, dynamic exporter = null)
         {
             if (this.TempFiles.ContainsKey(entry))
                 this.DeleteTempFile(entry);
@@ -235,10 +235,10 @@ namespace DieselToolbox
             return temp;
         }
 
-        public TempFile GetTempFile(FileEntry file, BundleFileEntry entry = null, dynamic exporter = null)
+        public TempFile GetTempFile(FileEntry file, PackageFileEntry entry = null, dynamic exporter = null)
         {
             TempFile path;
-            if (!this.TempFiles.ContainsKey(file) || TempFiles[file].Disposed || !File.Exists(TempFiles[file].Path) || TempFiles[file].ExporterKey != exporter?.key || TempFiles[file].Entry != entry)
+            if (!this.TempFiles.ContainsKey(file) || this.TempFiles[file].Disposed || !File.Exists(this.TempFiles[file].Path) || this.TempFiles[file].ExporterKey != exporter?.key || this.TempFiles[file].Entry != entry)
             {
                 if (this.TempFiles.ContainsKey(file))
                     this.DeleteTempFile(file);
@@ -265,13 +265,13 @@ namespace DieselToolbox
 
         public void DeleteAllTempFiles()
         {
-            List<TempFile> key_list = TempFiles.Values.ToList();
+            List<TempFile> key_list = this.TempFiles.Values.ToList();
             for (int i = 0; i < this.TempFiles.Count; i++)
             {
-                    key_list[i].Dispose();
+                key_list[i].Dispose();
             }
 
-            TempFiles = new Dictionary<FileEntry, TempFile>();
+            this.TempFiles = new Dictionary<FileEntry, TempFile>();
         }
 
         public void Dispose()

@@ -32,7 +32,7 @@ namespace DieselEngineFormats.ScriptData {
             //Remove space characters as they are invalid in xml
 			sb.Append(indentation.ToString() + "<" + this.meta.Replace(" ", "-"));
 
-			if (!index.Equals(-1))
+			if (!this.index.Equals(-1))
 			{
 				//sb.Append(" index=\"" + this.index + "\"");
 			}

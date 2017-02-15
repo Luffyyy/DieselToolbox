@@ -31,13 +31,13 @@ namespace DieselToolbox
             StaticData.Engine = Python.CreateEngine();
 			StaticData.Settings = new Settings ();
 
-			this.LoadScripts();
+			//this.LoadScripts();
 
 			bool launchMain = true;
 			bool showHelp = false;
 
-			string fontFile = null;
-			string textureFile = null;
+			/*string fontFile = null;
+			string textureFile = null;*/
 
 			var p = new OptionSet() {
 				/*{ "t|texture=", "the {FILEPATH} of a DDS texture you wish to use.",
@@ -92,7 +92,7 @@ namespace DieselToolbox
 				ddsView.Show();
 			}*/
 
-            this.LoadHashlists ();
+            //this.LoadHashlists ();
 
 			if (launchMain)
 			{
@@ -161,9 +161,12 @@ namespace DieselToolbox
 
 		public void LoadHashlists()
 		{
-			foreach (string file in Directory.EnumerateFiles(Definitions.HashDir)) {
-				HashIndex.Load (file);
-			}
+            HashIndex.Load(Path.Combine(Definitions.HashDir, "paths"), HashIndex.HashType.Path);
+            HashIndex.Load(Path.Combine(Definitions.HashDir, "exts"));
+            //HashIndex.Load(Path.Combine(Definitions.HashDir, "others"));
+
+            foreach (string file in Directory.EnumerateFiles(Path.Combine(Definitions.HashDir, Definitions.AddedHashDir)))
+				HashIndex.Load (file, HashIndex.HashType.Path);
 		}
 	}
 

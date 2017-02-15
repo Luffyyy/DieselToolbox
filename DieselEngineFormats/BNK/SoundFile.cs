@@ -9,10 +9,10 @@ namespace DieselEngineFormats.BNK
 {
     public class SoundFile
     {
-        public UInt32 id;
+        public uint id;
         public String name;
         public bool streamed;
-        public UInt32 data_offset;
+        public uint data_offset;
         public object length_object;
         public object loop_object;
         public string effects;
@@ -46,7 +46,7 @@ namespace DieselEngineFormats.BNK
 
         public override string ToString()
         {
-            return (String.IsNullOrWhiteSpace(name) ? id.ToString() : name);
+            return (String.IsNullOrWhiteSpace(this.name) ? this.id.ToString() : this.name);
         }
     }
 }

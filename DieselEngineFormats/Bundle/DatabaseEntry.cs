@@ -1,12 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="NameEntry.cs" company="Zwagoth">
-//   This code is released into the public domain by Zwagoth.
-// </copyright>
-// <summary>
-//   The name entry.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-namespace DieselEngineFormats.Bundle
+﻿namespace DieselEngineFormats.Bundle
 {
     /// <summary>
     ///     The name entry.
@@ -26,10 +18,10 @@ namespace DieselEngineFormats.Bundle
         {
             get
             {
-                if (_ids_extension == null)
-                    _ids_extension = HashIndex.GetExtension(_extension);
+                if (this._ids_extension == null)
+                    this._ids_extension = HashIndex.Get(this._extension);
 
-                return _ids_extension;
+                return this._ids_extension;
             }
         }
 
@@ -46,10 +38,10 @@ namespace DieselEngineFormats.Bundle
         ///     Gets or sets the name entry path hash.
         /// </summary>
         public Idstring Path { get {
-                if (_ids_path == null)
-                    _ids_path = HashIndex.GetPath(_path);
+                if (this._ids_path == null)
+                    this._ids_path = HashIndex.Get(this._path);
 
-                return _ids_path;
+                return this._ids_path;
             } }
 
         /// <summary>

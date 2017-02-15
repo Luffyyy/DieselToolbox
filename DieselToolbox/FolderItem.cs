@@ -55,20 +55,20 @@ namespace DieselToolbox
 
         public SortedDictionary<string, IChild> Children
         {
-            get { return _children; }
-            set { _children = value; }
+            get { return this._children; }
+            set { this._children = value; }
         }
 
         public List<object> ChildObjects(Idstring pck = null)
         {
             List<object> objs = new List<object>();
-            foreach (KeyValuePair<string, IChild> kvp in Children)
+            foreach (KeyValuePair<string, IChild> kvp in this.Children)
             {
                 if (kvp.Value is IParent && (pck == null || ((IParent)kvp.Value).ContainsAnyBundleEntries(pck)))
                     objs.Add(kvp.Value);
             }
 
-            foreach (KeyValuePair<string, IChild> kvp in Children)
+            foreach (KeyValuePair<string, IChild> kvp in this.Children)
             {
                 if (kvp.Value is IChild && (!(kvp.Value is FileEntry) || pck == null || ((FileEntry)kvp.Value).BundleEntries.FindIndex(item => item.Parent.Name.Equals(pck)) != -1) && !(kvp.Value is IParent))
                     objs.Add(kvp.Value);
@@ -83,15 +83,15 @@ namespace DieselToolbox
 
         public FolderItem(FileEntry entry, uint level = 0)
         {
-            folderLevel = level;
-            _children = new SortedDictionary<string, IChild>();
+            this.folderLevel = level;
+            this._children = new SortedDictionary<string, IChild>();
             this.AddFileEntry(entry);
         }
 
         public FolderItem(Dictionary<uint, FileEntry> ents, uint level = 0)
         {
-            folderLevel = level;
-            _children = new SortedDictionary<string, IChild>();
+            this.folderLevel = level;
+            this._children = new SortedDictionary<string, IChild>();
 
             foreach (KeyValuePair<uint, FileEntry> entry in ents)
             {
@@ -102,19 +102,19 @@ namespace DieselToolbox
         public void AddFileEntry(FileEntry entry)
         {
             int[] path_parts = entry._path.UnHashedParts;
-            if (path_parts != null && path_parts.Length > (folderLevel + 1))
+            if (path_parts != null && path_parts.Length > (this.folderLevel + 1))
             {
-                string initial_folder = HashIndex.LookupString(path_parts[folderLevel]);
-                if (!_children.ContainsKey(initial_folder))
+                string initial_folder = HashIndex.LookupString(path_parts[this.folderLevel]);
+                if (!this._children.ContainsKey(initial_folder))
                 {
-                    FolderItem folder = new FolderItem(entry, folderLevel + 1)
+                    FolderItem folder = new FolderItem(entry, this.folderLevel + 1)
                     {
                         Parent = this
 
                     };
 
                     folder.Path = "assets";
-                    for (int i = 0; i <= folderLevel; i++)
+                    for (int i = 0; i <= this.folderLevel; i++)
                     {
                         System.IO.Path.Combine(folder.Path, HashIndex.LookupString(path_parts[i]));
                     }

@@ -15,22 +15,22 @@ namespace DieselEngineFormats.Font
 
         public FontKerning(BinaryReader instream)
         {
-            char1 = instream.ReadInt32();
-            char2 = instream.ReadInt32();
-            u1 = instream.ReadByte();
-            u2 = instream.ReadByte();
-            u3 = instream.ReadByte();
-            u4 = instream.ReadByte();
+            this.char1 = instream.ReadInt32();
+            this.char2 = instream.ReadInt32();
+            this.u1 = instream.ReadByte();
+            this.u2 = instream.ReadByte();
+            this.u3 = instream.ReadByte();
+            this.u4 = instream.ReadByte();
         }
 
         public void WriteStream(BinaryWriter bw)
         {
-            bw.Write(char1);
-            bw.Write(char2);
-            bw.Write(u1);
-            bw.Write(u2);
-            bw.Write(u3);
-            bw.Write(u4);
+            bw.Write(this.char1);
+            bw.Write(this.char2);
+            bw.Write(this.u1);
+            bw.Write(this.u2);
+            bw.Write(this.u3);
+            bw.Write(this.u4);
         }
     }
 
@@ -55,7 +55,7 @@ namespace DieselEngineFormats.Font
 
         public int ASCIICode { get; set; }
 
-        public char Character { get { return (char)ASCIICode; } set { ASCIICode = (int)value; } }
+        public char Character { get { return (char)this.ASCIICode; } set { this.ASCIICode = (int)value; } }
 
         public object Tag { get; set; }
 
@@ -64,31 +64,31 @@ namespace DieselEngineFormats.Font
         public FontCharacter(BinaryReader instream)
         {
             instream.ReadByte();
-            W = instream.ReadByte();
-            H = instream.ReadByte();
-            XAdvance = instream.ReadByte();
-            XOffset = instream.ReadSByte();
-            YOffset = instream.ReadSByte();
-            X = instream.ReadInt16();
-            Y = instream.ReadInt16();
+            this.W = instream.ReadByte();
+            this.H = instream.ReadByte();
+            this.XAdvance = instream.ReadByte();
+            this.XOffset = instream.ReadSByte();
+            this.YOffset = instream.ReadSByte();
+            this.X = instream.ReadInt16();
+            this.Y = instream.ReadInt16();
         }
 
         public void WriteMainSection(BinaryWriter bw)
         {
             bw.Write((byte)0);
-            bw.Write(W);
-            bw.Write(H);
-            bw.Write(XAdvance);
-            bw.Write(XOffset);
-            bw.Write(YOffset);
-            bw.Write(X);
-            bw.Write(Y);
+            bw.Write(this.W);
+            bw.Write(this.H);
+            bw.Write(this.XAdvance);
+            bw.Write(this.XOffset);
+            bw.Write(this.YOffset);
+            bw.Write(this.X);
+            bw.Write(this.Y);
         }
 
         public void WriteCodeIDSection(BinaryWriter bw)
         {
-            bw.Write(ASCIICode);
-            bw.Write(ID);
+            bw.Write(this.ASCIICode);
+            bw.Write(this.ID);
         }
     }
 
@@ -96,13 +96,13 @@ namespace DieselEngineFormats.Font
     {
         public List<FontKerning> kerning = new List<FontKerning>();
 
-        public bool HasKerning { get { return kerning.Count > 0; } }
+        public bool HasKerning { get { return this.kerning.Count > 0; } }
 
         public int TextureWidth, TextureHeight;
 
         public string Name { get; set; }
 
-        private int EndTag = 925913978;
+        private const int EndTag = 925913978;
 
         public int u1, u2, u3, u5, LineHeight, u7, Info_Size;
 
@@ -113,15 +113,15 @@ namespace DieselEngineFormats.Font
         public List<FontCharacter> Characters { 
             get 
             {
-                _characters.Sort(delegate(FontCharacter x, FontCharacter y)
+                this._characters.Sort(delegate(FontCharacter x, FontCharacter y)
                 {
                     return x.ASCIICode.CompareTo(y.ASCIICode);
                 });
-                return _characters; 
+                return this._characters; 
             }
             set 
             {
-                _characters = value;
+                this._characters = value;
             }
         }
 
@@ -226,8 +226,8 @@ namespace DieselEngineFormats.Font
 
             int fontRectPos = br.ReadInt32();
 
-            u1 = br.ReadInt32();//Unknown
-            u2 = br.ReadInt32();//Unknown
+            this.u1 = br.ReadInt32();//Unknown
+            this.u2 = br.ReadInt32();//Unknown
 
             br.ReadInt32();//Count
             br.ReadInt32();//Count
@@ -235,9 +235,9 @@ namespace DieselEngineFormats.Font
             int asciiCharsPos = br.ReadInt32();
 
             br.ReadInt32();//Unknown, Same as L52
-            u3 = br.ReadInt32();//Unknown
-            u4 = br.ReadInt16();//Unknown Short at end seems to be base
-            Common_Base = br.ReadInt16();
+            this.u3 = br.ReadInt32();//Unknown
+            this.u4 = br.ReadInt16();//Unknown Short at end seems to be base
+            this.Common_Base = br.ReadInt16();
 
             int kernings = br.ReadInt32();
             br.ReadInt32();
@@ -247,22 +247,22 @@ namespace DieselEngineFormats.Font
             bool hasKerning = kerningPos != 0;
 
             br.ReadInt32();//Unknown, same as L52
-            u5 = br.ReadInt32();//Unknown
+            this.u5 = br.ReadInt32();//Unknown
             br.ReadInt32();//Unknown
 
             int endPos = br.ReadInt32();
 
             int kernCount = (endPos - kerningPos) / 12;
 
-            LineHeight = br.ReadInt32(); //Line Height
+            this.LineHeight = br.ReadInt32(); //Line Height
 
-            TextureWidth = br.ReadInt32();
+            this.TextureWidth = br.ReadInt32();
 
-            TextureHeight = br.ReadInt32();
+            this.TextureHeight = br.ReadInt32();
 
-            u7 = br.ReadInt32(); //Sometimes the same as LineHeight
+            this.u7 = br.ReadInt32(); //Sometimes the same as LineHeight
 
-            Info_Size = br.ReadInt32(); //base?
+            this.Info_Size = br.ReadInt32(); //base?
 
             if (br.BaseStream.Position != fontRectPos)
             {
@@ -272,7 +272,7 @@ namespace DieselEngineFormats.Font
 
             for (int i = 0; i < charCount; i++)
             {
-                _characters.Add(new FontCharacter(br));
+                this._characters.Add(new FontCharacter(br));
             }
 
             if ((charCount % 2) != 0)
@@ -288,15 +288,15 @@ namespace DieselEngineFormats.Font
             {
                 int ASCIICode = br.ReadInt32();
                 int ID = br.ReadInt32();
-                _characters[ID].ID = ID;
-                _characters[ID].ASCIICode = ASCIICode;
+                this._characters[ID].ID = ID;
+                this._characters[ID].ASCIICode = ASCIICode;
             }
 
             if (hasKerning)
             {
                 for (int i = 0; i < kernCount; i++)
                 {
-                    kerning.Add(new FontKerning(br));
+                    this.kerning.Add(new FontKerning(br));
                 }
             }
 
@@ -325,8 +325,8 @@ namespace DieselEngineFormats.Font
             //font rect pos
             bw.Write(92);
 
-            bw.Write(u1);
-            bw.Write(u2);
+            bw.Write(this.u1);
+            bw.Write(this.u2);
 
             bw.Write(charCount);
             bw.Write(charCount);
@@ -334,31 +334,31 @@ namespace DieselEngineFormats.Font
             //asciiID pos
             bw.Write(92 + (charCount * 10) + ((charCount % 2) != 0 ? 2 : 0));
 
-            bw.Write(u1);
-            bw.Write(u3);
-            bw.Write(u4);
-            bw.Write(Common_Base);
+            bw.Write(this.u1);
+            bw.Write(this.u3);
+            bw.Write(this.u4);
+            bw.Write(this.Common_Base);
 
-            bw.Write(kerning.Count);
-            bw.Write(kerning.Count);
+            bw.Write(this.kerning.Count);
+            bw.Write(this.kerning.Count);
 
             //Kerning pos
-            bw.Write((HasKerning ? 92 + (charCount * 18) : 0) + ((charCount % 2) != 0 ? 2 : 0));
+            bw.Write((this.HasKerning ? 92 + (charCount * 18) : 0) + ((charCount % 2) != 0 ? 2 : 0));
 
-            bw.Write(u1);
-            bw.Write(u5);
-            bw.Write(u1);
+            bw.Write(this.u1);
+            bw.Write(this.u5);
+            bw.Write(this.u1);
 
             //end pos
-            bw.Write(92 + (charCount * 18) + (kerning.Count * 12) + ((charCount % 2) != 0 ? 2 : 0));
+            bw.Write(92 + (charCount * 18) + (this.kerning.Count * 12) + ((charCount % 2) != 0 ? 2 : 0));
 
-            bw.Write(LineHeight);
-            bw.Write(TextureWidth);
-            bw.Write(TextureHeight);
-            bw.Write(u7 != 0 ? LineHeight : u7);
-            bw.Write(Info_Size);
+            bw.Write(this.LineHeight);
+            bw.Write(this.TextureWidth);
+            bw.Write(this.TextureHeight);
+            bw.Write(this.u7 != 0 ? this.LineHeight : this.u7);
+            bw.Write(this.Info_Size);
 
-            _characters.Sort(delegate(FontCharacter x, FontCharacter y)
+            this._characters.Sort(delegate(FontCharacter x, FontCharacter y)
             {
                 return x.ID.CompareTo(y.ID);
             });
@@ -371,7 +371,7 @@ namespace DieselEngineFormats.Font
             if ((charCount % 2) != 0)
                 bw.Write((short)0);
 
-            _characters.Sort(delegate(FontCharacter x, FontCharacter y)
+            this._characters.Sort(delegate(FontCharacter x, FontCharacter y)
             {
                 return x.ASCIICode.CompareTo(y.ASCIICode);
             });
@@ -394,7 +394,7 @@ namespace DieselEngineFormats.Font
             while (bw.BaseStream.Position % 4 != 0)
                 bw.Write((byte)0);
 
-            bw.Write(EndTag);
+            bw.Write(DieselFont.EndTag);
         }
         #endregion
     }

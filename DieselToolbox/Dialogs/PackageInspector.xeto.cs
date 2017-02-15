@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0649
+
+using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
@@ -22,32 +24,32 @@ namespace DieselToolbox
         TextBox txtAddress;
         TextBox txtLength;
 
-        private BundleDatabase lookup_db;
+        private PackageDatabase lookup_db;
 
         public PackageInspector()
         {
             XamlReader.Load(this);
             TreeItemCollection treeItems = new TreeItemCollection();
-            treeItems.Add(treeBundleEntries = new TreeItem { Text="File Entries" });
-            treeItems.Add(treeReferenceEntries = new TreeItem { Text= "Footer Entries" });
+            treeItems.Add(this.treeBundleEntries = new TreeItem { Text="File Entries" });
+            treeItems.Add(this.treeReferenceEntries = new TreeItem { Text= "Footer Entries" });
 
             this.treeEntries.DataStore = treeItems;
         }
 
-        public PackageInspector(PackageHeader header, BundleDatabase db) : this()
+        public PackageInspector(PackageHeader header, PackageDatabase db) : this()
         {
             this.BuildEntries(header, db);
         }
 
-        public void BuildEntries(PackageHeader header, BundleDatabase db)
+        public void BuildEntries(PackageHeader header, PackageDatabase db)
         {
             this.treeBundleEntries.Children.Clear();
             this.treeReferenceEntries.Children.Clear();
             this.ClearEntryFields();
             this.Title = String.Format("{0} - Bundle Inspector", header.Name.ToString());
 
-            lookup_db = db;
-            foreach (BundleFileEntry entry in header.Entries)
+            this.lookup_db = db;
+            foreach (PackageFileEntry entry in header.Entries)
             {
                 DatabaseEntry db_ent = db.EntryFromID(entry.ID);
 
@@ -58,7 +60,7 @@ namespace DieselToolbox
                 );
             }
 
-            foreach(BundleFooterEntry entry in header.References)
+            foreach(PackageFooterEntry entry in header.References)
             {
                 this.treeReferenceEntries.Children.Add(
                     new TreeItem { Text = String.Format("{0}.{1}", entry.Path.ToString(), entry.Extension.ToString()), Tag = entry }
@@ -72,10 +74,10 @@ namespace DieselToolbox
             object tag;
             if ((tag = (tree.SelectedItem as TreeItem)?.Tag) != null)
             {
-                if (tag is BundleFileEntry)
-                    this.SetInspectedEntry((BundleFileEntry)tag);
-                else if (tag is BundleFooterEntry)
-                    this.SetInspectedEntry((BundleFooterEntry)tag);
+                if (tag is PackageFileEntry)
+                    this.SetInspectedEntry((PackageFileEntry)tag);
+                else if (tag is PackageFooterEntry)
+                    this.SetInspectedEntry((PackageFooterEntry)tag);
             }
         }
 
@@ -90,12 +92,12 @@ namespace DieselToolbox
             this.txtLength.Text = "";
         }
 
-        public void SetInspectedEntry(BundleFileEntry entry)
+        public void SetInspectedEntry(PackageFileEntry entry)
         {
             this.ClearEntryFields();
-            DatabaseEntry db_ent = lookup_db.EntryFromID(entry.ID);
+            DatabaseEntry db_ent = this.lookup_db.EntryFromID(entry.ID);
             this.txtPath.Text = db_ent?.Path?.ToString();
-            this.txtLang.Text = (db_ent?.Language ?? 0) != 0 ? lookup_db.LanguageFromID((uint)db_ent?.Language).Name.ToString() : ""; 
+            this.txtLang.Text = (db_ent?.Language ?? 0) != 0 ? this.lookup_db.LanguageFromID((uint)db_ent?.Language).Name.ToString() : ""; 
             this.txtType.Text = db_ent?.Extension?.ToString();
             this.txtID.Text = entry.ID.ToString();
             this.txtLangID.Text = (db_ent?.Language ?? 0) != 0 ? db_ent?.Language.ToString() : "";
@@ -103,7 +105,7 @@ namespace DieselToolbox
             this.txtLength.Text = entry.Length.ToString();
         }
 
-        public void SetInspectedEntry(BundleFooterEntry entry)
+        public void SetInspectedEntry(PackageFooterEntry entry)
         {
             this.ClearEntryFields();
             this.txtPath.Text = entry.Path.ToString();

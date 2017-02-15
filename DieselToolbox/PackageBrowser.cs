@@ -25,7 +25,7 @@ namespace DieselToolbox
 
         public IParent Root { get; set; }
 
-        public Dictionary<string, FileEntry> RawFiles = new Dictionary<string, FileEntry>();
+        public Dictionary<Tuple<Idstring, Idstring, Idstring>, FileEntry> RawFiles = new Dictionary<Tuple<Idstring, Idstring, Idstring>, FileEntry>();
 
         public string WorkingDirectory { get; set; }
 
@@ -37,16 +37,16 @@ namespace DieselToolbox
         {
             get
             {
-                return _selectedFolder;
+                return this._selectedFolder;
             }
             set
             {
-                _selectedFolder = value;
+                this._selectedFolder = value;
                 this.OnFolderSelected(this, null);
             }
         }
 
-		public BundleDatabase BundleDB { get; set; }
+		public PackageDatabase BundleDB { get; set; }
 
         private Action<string> progressStringCallback { get; set; }
 
@@ -54,20 +54,20 @@ namespace DieselToolbox
 
         public PackageBrowser()
         {
-            TempFileManager = new FileViewerManager();
+            this.TempFileManager = new FileViewerManager();
         }
 
         public void LoadDatabase(string path, Action<string> progressString = null)
         {
-            progressStringCallback = progressString;
+            this.progressStringCallback = progressString;
 
             this.WorkingDirectory = Path.GetDirectoryName(path);
 
-			LoadTimer = new UITimer{
+            this.LoadTimer = new UITimer{
 				Interval = 0.01
 			};
-			LoadTimer.Elapsed += this.LoadPackagesUpdate;
-            LoadTimer.Start();
+            this.LoadTimer.Elapsed += this.LoadPackagesUpdate;
+            this.LoadTimer.Start();
 
             Thread loadThread = new Thread(() => this.LoadPackages(path));
             loadThread.IsBackground = true;
@@ -77,36 +77,40 @@ namespace DieselToolbox
         bool finishedLoad = false;
         public void LoadPackagesUpdate(object sender, EventArgs e)
         {
-            progressStringCallback?.Invoke(CurrentProgressString);
+            this.progressStringCallback?.Invoke(this.CurrentProgressString);
 
-            if (finishedLoad)
+            if (this.finishedLoad)
             {
-				finishedLoad = false;
+                this.finishedLoad = false;
                 this.OnWorkingDirectoryUpdated?.Invoke(this, null);
 
-                LoadTimer.Stop();
-                LoadTimer = null;
+                this.LoadTimer.Stop();
+                this.LoadTimer = null;
                 
             }
         }
 
         public void LoadPackages(string filename)
         {
-            CurrentProgressString = "Beginning Operation";
+            this.CurrentProgressString = "Beginning Operation";
 
-            PackageHeaders = new SortedDictionary<Idstring, PackageHeader>();
+            this.PackageHeaders = new SortedDictionary<Idstring, PackageHeader>();
 
-            CurrentProgressString = "Loading Database";
+            this.CurrentProgressString = "Loading Existing Hashes";
+
+            App.Instance.LoadHashlists();
+
+            this.CurrentProgressString = "Loading Database";
             //Load Bundle Database
-			BundleDB = new BundleDatabase(filename);
+            this.BundleDB = new PackageDatabase(filename);
 
-            CurrentProgressString = "Loading Hashlist";
-            General.LoadHashlist(this.WorkingDirectory, BundleDB);
+            this.CurrentProgressString = "Loading Hashlist";
+            General.LoadHashlist(this.WorkingDirectory, this.BundleDB);
 
-            CurrentProgressString = "Registering File Entries";
-			Dictionary<uint, FileEntry> fileEntries = this.DatabaseEntryToFileEntry(BundleDB.GetDatabaseEntries());
+            this.CurrentProgressString = "Registering File Entries";
+			Dictionary<uint, FileEntry> fileEntries = this.DatabaseEntryToFileEntry(this.BundleDB.GetDatabaseEntries());
 
-            CurrentProgressString = "Loading Package Headers";
+            this.CurrentProgressString = "Loading Package Headers";
             List<string> bundles_heads = Directory.EnumerateFiles(this.WorkingDirectory, "*_h.bundle").ToList();
 
             List<string> files = bundles_heads.Count == 0 ? Directory.EnumerateFiles(this.WorkingDirectory, "*.bundle").ToList() : bundles_heads;
@@ -115,21 +119,23 @@ namespace DieselToolbox
                 string file = files[i];
                 if (File.Exists(file.Replace("_h", "")))
                 {
-                    CurrentProgressString = String.Format("Loading Package {0}/{1}", i, files.Count);
+                    this.CurrentProgressString = String.Format("Loading Package {0}/{1}", i, files.Count);
 					PackageHeader bundle = new PackageHeader(file);
 					this.AddBundleEntriesToFileEntries (fileEntries, bundle.Entries);
-                    PackageHeaders.Add(bundle.Name, bundle);
+                    this.PackageHeaders.Add(bundle.Name, bundle);
                 }
             }
 
-			CurrentProgressString = "Registring Folder Layout";
-			Root = new FolderItem(fileEntries) { Path = "assets" };
+            this.CurrentProgressString = "Registring Folder Layout";
+            this.Root = new FolderItem(fileEntries) { Path = "assets", Name = "assets" };
             foreach(FileEntry entry in fileEntries.Values)
             {
-                this.RawFiles.Add(entry.Path, entry);
+                this.RawFiles.Add(new Tuple<Idstring, Idstring, Idstring> (entry._path, entry._language, entry._extension), entry);
             }
-            finishedLoad = true;
-            CurrentProgressString = "Finishing";
+            this.finishedLoad = true;
+            HashIndex.Clear();
+            GC.Collect();
+            this.CurrentProgressString = "Finishing";
         }
 
 		public Dictionary<uint, FileEntry> DatabaseEntryToFileEntry(List<DatabaseEntry> entries)
@@ -137,15 +143,15 @@ namespace DieselToolbox
 			Dictionary<uint, FileEntry> fileEntries = new Dictionary<uint, FileEntry>();
             foreach (DatabaseEntry ne in entries)
             {
-				FileEntry fe = new FileEntry(ne, BundleDB) {ParentBrowser = this};
+				FileEntry fe = new FileEntry(ne, this.BundleDB) {ParentBrowser = this};
 				fileEntries.Add(ne.ID, fe);
             }
             return fileEntries;
         }
 
-		private void AddBundleEntriesToFileEntries(Dictionary<uint, FileEntry> fileEntries, List<BundleFileEntry> bes)
+		private void AddBundleEntriesToFileEntries(Dictionary<uint, FileEntry> fileEntries, List<PackageFileEntry> bes)
 		{
-			foreach (BundleFileEntry be in bes) {
+			foreach (PackageFileEntry be in bes) {
 				if (fileEntries.ContainsKey (be.ID)) {
 					fileEntries[be.ID].AddBundleEntry(be);
 				}

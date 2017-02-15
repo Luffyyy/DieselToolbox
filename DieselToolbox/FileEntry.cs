@@ -17,7 +17,7 @@ namespace DieselToolbox
     {
         private uint _size;
         private string _name, _fullpath;
-        private BundleFileEntry _max_entry = null;
+        private PackageFileEntry _max_entry = null;
 
         public Idstring _path;
 
@@ -29,18 +29,18 @@ namespace DieselToolbox
         {
             get
             {
-                if (_fullpath == null)
+                if (this._fullpath == null)
                 {
-                    _fullpath = this._path.ToString();
+                    this._fullpath = this._path.ToString();
 
                     if (this._language != null)
                     {
-                        _fullpath += "." + this._language.ToString();
+                        this._fullpath += "." + this._language.ToString();
                     }
 
-                    _fullpath += "." + this._extension.ToString();
+                    this._fullpath += "." + this._extension.ToString();
                 }
-                return _fullpath;
+                return this._fullpath;
             }
         }
 
@@ -48,22 +48,22 @@ namespace DieselToolbox
         {
             get
             {
-                if (_name == null)
+                if (this._name == null)
                 {
-                    _name = System.IO.Path.GetFileName(this._path.ToString());
+                    this._name = System.IO.Path.GetFileName(this._path.ToString());
                     if (this._language != null)
                     {
-                        _name += "." + this._language.ToString();
+                        this._name += "." + this._language.ToString();
                     }
 
-                    _name += "." + this._extension.ToString();
+                    this._name += "." + this._extension.ToString();
                 }
 
-                return _name;
+                return this._name;
             }
         }
 
-        public List<BundleFileEntry> BundleEntries = new List<BundleFileEntry>();
+        public List<PackageFileEntry> BundleEntries = new List<PackageFileEntry>();
 
         public DatabaseEntry DBEntry { get; set; }
 
@@ -96,19 +96,19 @@ namespace DieselToolbox
         {
             get
             {
-                if (_size == 0 && this.BundleEntries.Count > 0)
+                if (this._size == 0 && this.BundleEntries.Count > 0)
                 {
-                    _size = 0;
-                    foreach (BundleFileEntry be in this.BundleEntries)
-                        _size += (uint)be.Length;
+                    this._size = 0;
+                    foreach (PackageFileEntry be in this.BundleEntries)
+                        this._size += (uint)be.Length;
 
-                    _size = (uint)(_size / Math.Max(this.BundleEntries.Count, 1));
+                    this._size = (uint)(this._size / Math.Max(this.BundleEntries.Count, 1));
                 }
                 string str_size;
-                if (_size < 1024)
-                    str_size = _size.ToString() + " B";
+                if (this._size < 1024)
+                    str_size = this._size.ToString() + " B";
                 else
-                    str_size = string.Format("{0:n0}", _size / 1024) + " KB";
+                    str_size = string.Format("{0:n0}", this._size / 1024) + " KB";
 
                 return str_size;
             }
@@ -124,23 +124,23 @@ namespace DieselToolbox
 
         public string TempPath { get; set; }
 
-        public BundleFileEntry TempEntry { get; set; }
+        public PackageFileEntry TempEntry { get; set; }
 
         public FileEntry() { }
 
-        public FileEntry(DatabaseEntry dbEntry, BundleDatabase db) { this.SetDBEntry(dbEntry, db); }
+        public FileEntry(DatabaseEntry dbEntry, PackageDatabase db) { this.SetDBEntry(dbEntry, db); }
 
-        public void AddBundleEntry(BundleFileEntry entry)
+        public void AddBundleEntry(PackageFileEntry entry)
         {
             this.BundleEntries.Add(entry);
-            _max_entry = null;
+            this._max_entry = null;
         }
 
-        public object FileData(BundleFileEntry be = null, dynamic exporter = null)
+        public object FileData(PackageFileEntry be = null, dynamic exporter = null)
         {
             if (exporter == null)
             {
-                return this.FileBytes(be);
+                return this.FileStream(be);
             }
             else
             {
@@ -157,7 +157,7 @@ namespace DieselToolbox
             }
         }
 
-        private byte[] FileEntryBytes(BundleFileEntry entry)
+        private byte[] FileEntryBytes(PackageFileEntry entry)
         {
             if (entry == null)
                 return null;
@@ -180,6 +180,8 @@ namespace DieselToolbox
                             fs.Position = entry.Address;
                             return br.ReadBytes((int)(entry.Length == -1 ? fs.Length - fs.Position : entry.Length));
                         }
+                        else
+                            return new byte[0];
                     }
                 }
             }
@@ -192,7 +194,7 @@ namespace DieselToolbox
             return null;
         }
 
-        public MemoryStream FileStream(BundleFileEntry entry = null)
+        public MemoryStream FileStream(PackageFileEntry entry = null)
         {
             entry = entry ?? this.MaxBundleEntry();
 
@@ -200,51 +202,50 @@ namespace DieselToolbox
             if (bytes == null)
                 return null;
 
-            MemoryStream stream = new MemoryStream();
-            stream.Write(bytes, 0, bytes.Length);
+            MemoryStream stream = new MemoryStream(bytes);
             stream.Position = 0;
             return stream;
         }
 
-        public byte[] FileBytes(BundleFileEntry entry = null)
+        public byte[] FileBytes(PackageFileEntry entry = null)
         {
             entry = entry ?? this.MaxBundleEntry();
 
             return this.FileEntryBytes(entry);
         }
 
-        public void SetDBEntry(DatabaseEntry ne, BundleDatabase db)
+        public void SetDBEntry(DatabaseEntry ne, PackageDatabase db)
         {
-            DBEntry = ne;
+            this.DBEntry = ne;
             if (!ne.Path.HasUnHashed)
                 Console.WriteLine("No unhashed string for " + ne.Path.Hashed);
 
-            General.GetFilepath(ne, out _path, out _language, out _extension, db);
+            General.GetFilepath(ne, out this._path, out this._language, out this._extension, db);
         }
 
-        public BundleFileEntry MaxBundleEntry()
+        public PackageFileEntry MaxBundleEntry()
         {
             if (this.BundleEntries.Count == 0)
                 return null;
 
-            if (_max_entry == null)
+            if (this._max_entry == null)
             {
-                _max_entry = null;
-                foreach (BundleFileEntry entry in this.BundleEntries)
+                this._max_entry = null;
+                foreach (PackageFileEntry entry in this.BundleEntries)
                 {
-                    if (_max_entry == null)
+                    if (this._max_entry == null)
                     {
-                        _max_entry = entry;
+                        this._max_entry = entry;
                         continue;
                     }
 
-                    if (entry.Length > _max_entry.Length)
-                        _max_entry = entry;
+                    if (entry.Length > this._max_entry.Length)
+                        this._max_entry = entry;
                 }
 
             }
 
-            return _max_entry;
+            return this._max_entry;
         }
     }
 }

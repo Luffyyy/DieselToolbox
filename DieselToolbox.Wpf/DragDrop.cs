@@ -64,7 +64,7 @@ namespace DieselToolbox.Wpf
                 StreamContents = () =>
                 {
                     MemoryStream stream = new MemoryStream();
-                    BundleFileEntry maxBundleEntry = parent.MaxBundleEntry();
+                    PackageFileEntry maxBundleEntry = parent.MaxBundleEntry();
                     Console.WriteLine("Extracted {0} from package: {1}", name, maxBundleEntry.PackageName.ToString());
                     byte[] bytes = parent.FileBytes(maxBundleEntry);
                     if (bytes != null)

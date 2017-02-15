@@ -10,7 +10,7 @@ namespace DieselEngineFormats.BNK.Sections
     class SoundStructure_effect
     {
         public byte effectindex; //00 - 03
-        public UInt32 id;
+        public uint id;
         public byte[] zeroes = null;
 
         public SoundStructure_effect(BinaryReader instream)
@@ -30,7 +30,7 @@ namespace DieselEngineFormats.BNK.Sections
 
     class SoundStructure_stategroup
     {
-        public UInt32 id;
+        public uint id;
         public byte changeAt;
         public UInt16 number_of_differingStates;
         public List<SoundStructure_stategroup_different> differingStates = new List<SoundStructure_stategroup_different>();
@@ -56,8 +56,8 @@ namespace DieselEngineFormats.BNK.Sections
 
     class SoundStructure_stategroup_different
     {
-        public UInt32 id;
-        public UInt32 settingsID;
+        public uint id;
+        public uint settingsID;
 
         public SoundStructure_stategroup_different(BinaryReader instream)
         {
@@ -74,9 +74,9 @@ namespace DieselEngineFormats.BNK.Sections
 
     class SoundStructure_rtpc
     {
-        public UInt32 id;
-        public UInt32 yaxisType;
-        public UInt32 unknownID;
+        public uint id;
+        public uint yaxisType;
+        public uint unknownID;
         public byte unknown1;
         public byte num_of_points;
         public byte unknown2;
@@ -111,7 +111,7 @@ namespace DieselEngineFormats.BNK.Sections
     {
         public float x;
         public float y;
-        public UInt32 curveShape;
+        public uint curveShape;
 
         public SoundStructure_rtpc_point(BinaryReader instream)
         {
@@ -138,8 +138,8 @@ namespace DieselEngineFormats.BNK.Sections
         public byte[] effect_bypassedeffects = null;
         public List<SoundStructure_effect> effects = new List<SoundStructure_effect>();
         //end if
-        public UInt32 outputbusID;
-        public UInt32 parentobjectID;
+        public uint outputbusID;
+        public uint parentobjectID;
         public bool overrideparentsettings_priority;
         public bool offsetpriority;
         public byte additionalParameters_count;
@@ -152,13 +152,13 @@ namespace DieselEngineFormats.BNK.Sections
         //if type == 00
         public bool pos_enablePanner;
         //else if type == 01
-        public UInt32 pos_sourceType; //02 = User-defined. 03 = Game-defined
-        public UInt32 pos_attenuationObjectID;
+        public uint pos_sourceType; //02 = User-defined. 03 = Game-defined
+        public uint pos_attenuationObjectID;
         public bool pos_isSpatializationEnabled;
         ////if sourceType == 02
-        public UInt32 pos_playType;
+        public uint pos_playType;
         public bool pos_isLooped; //ignore if playType != 02 || 03
-        public UInt32 pos_transitionTime; //in ms, ignore if playType != 02 || 03
+        public uint pos_transitionTime; //in ms, ignore if playType != 02 || 03
         public bool pos_followListenerOrientation;
         ////else if sourceType == 03
         public bool pos_updateAtEachFrame;
@@ -170,22 +170,22 @@ namespace DieselEngineFormats.BNK.Sections
         public bool overrrideparentsettings_udas; //User-Defined Auxiliary Sends
         public bool udas_exists;
         //if udas_exists
-        public UInt32 auxiliaryBus0ID;
-        public UInt32 auxiliaryBus1ID;
-        public UInt32 auxiliaryBus2ID;
-        public UInt32 auxiliaryBus3ID;
+        public uint auxiliaryBus0ID;
+        public uint auxiliaryBus1ID;
+        public uint auxiliaryBus2ID;
+        public uint auxiliaryBus3ID;
         //end if
         public bool unknown2;
         //if unknown2
         public byte priorityEqual; //00 = discard oldest instance, 01 = discard newest instance
         public byte limitReached; //00 = kill voice, 01 = user virtual voice settings
-        public UInt32 limitInstancesTo;
+        public uint limitInstancesTo;
         //end if
         public byte instanceLimitType; //00 = per game object, 01 = globally
         public byte virtualvoicebehavior; //00 = continue to play, 01 = kill voice, 02 = send to virtual voice
         public bool overrideparentsettings_playbacklimit;
         public bool overrideparentsettings_virtualvoice;
-        public UInt32 stategroup_count;
+        public uint stategroup_count;
         public List<SoundStructure_stategroup> stategroups = new List<SoundStructure_stategroup>();
         public UInt16 rtpc_count; //Real-time parameter controls
         public List<SoundStructure_rtpc> rtpcs = new List<SoundStructure_rtpc>();
@@ -320,7 +320,7 @@ namespace DieselEngineFormats.BNK.Sections
                 outstream.Write(paramType);
             foreach (object paramVal in this.additionalParametersValue)
             {
-                if (paramVal is UInt32)
+                if (paramVal is uint)
                     outstream.Write((uint)paramVal);
                 else
                     outstream.Write((float)paramVal);

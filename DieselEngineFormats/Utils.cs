@@ -213,7 +213,7 @@ namespace DieselEngineFormats.Utils
                 return "0";
         }
 
-        public static void LoadHashlist(string workingPath, BundleDatabase bundleDB)
+        public static void LoadHashlist(string workingPath, PackageDatabase bundleDB)
         {
             string hashlistPath = Path.Combine(workingPath, HashlistFile);
 
@@ -246,7 +246,7 @@ namespace DieselEngineFormats.Utils
             }
         }
 
-        public static void GenerateHashlist(string workingPath, BundleDatabase bundleDB)
+        public static void GenerateHashlist(string workingPath, PackageDatabase bundleDB)
         {
             List<string> headers = Directory.EnumerateFiles(workingPath, "all_*_h.bundle").ToList();
 
@@ -256,7 +256,7 @@ namespace DieselEngineFormats.Utils
                 if (File.Exists(bundle_file))
                 {
 					PackageHeader bundle = new PackageHeader(file);
-                    foreach (BundleFileEntry be in bundle.Entries)
+                    foreach (PackageFileEntry be in bundle.Entries)
                     {
                         DatabaseEntry ne = bundleDB.EntryFromID(be.ID);
                         if (ne == null)
@@ -273,7 +273,7 @@ namespace DieselEngineFormats.Utils
             }
         }
 
-        public static void GenerateHashlist(string workingPath, string file, BundleFileEntry be)
+        public static void GenerateHashlist(string workingPath, string file, PackageFileEntry be)
         {
             using (FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read))
             {
@@ -283,8 +283,6 @@ namespace DieselEngineFormats.Utils
                     StringBuilder sb = new StringBuilder();
                     string[] idstring_data;
                     HashSet<string> new_paths = new HashSet<string>();
-                    HashSet<string> new_exts = new HashSet<string>();
-                    HashSet<string> new_other = new HashSet<string>();
 
                     fs.Position = be.Address;
                     if (be.Length == -1)
@@ -300,24 +298,20 @@ namespace DieselEngineFormats.Utils
 
                     foreach (string idstring in idstring_data)
                     {
-                        if (idstring.Contains("/"))
                             new_paths.Add(idstring);
-                        else
-                            new_other.Add(idstring);
                     }
 
                     new_paths.Add("idstring_lookup");
                     new_paths.Add("existing_banks");
-                    new_other.Add("engine-package");
+                    new_paths.Add("engine-package");
 
                     HashIndex.Clear();
 
-					HashIndex.Load(ref new_paths, ref new_other);
+					HashIndex.Load(ref new_paths);
 
 					HashIndex.GenerateHashList(Path.Combine(workingPath, HashlistFile));
 
                     new_paths.Clear();
-                    new_exts.Clear();
                 }
             }
         }
@@ -365,7 +359,7 @@ namespace DieselEngineFormats.Utils
 		{
             id = SwapEdianness(id);
 
-            pck = HashIndex.GetAny(id);
+            pck = HashIndex.Get(id);
 
 			return true;
 		}
@@ -378,7 +372,7 @@ namespace DieselEngineFormats.Utils
 			return UnHashString(bundle_id);
 		}
 
-		public static string GetFullFilepath(DatabaseEntry dbEntry, BundleDatabase BundleDB = null)
+		public static string GetFullFilepath(DatabaseEntry dbEntry, PackageDatabase BundleDB = null)
 		{
 			if (dbEntry == null)
 				return "";
@@ -398,7 +392,7 @@ namespace DieselEngineFormats.Utils
 			return file;
 		}
 
-		public static void GetFilepath(DatabaseEntry dbEntry,  out Idstring path, out Idstring language, out Idstring extension, BundleDatabase BundleDB = null)
+		public static void GetFilepath(DatabaseEntry dbEntry,  out Idstring path, out Idstring language, out Idstring extension, PackageDatabase BundleDB = null)
 		{
 			path = dbEntry.Path;
 

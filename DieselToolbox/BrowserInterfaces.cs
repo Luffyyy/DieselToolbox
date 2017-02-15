@@ -19,6 +19,25 @@ namespace DieselToolbox
         IParent Parent { get; set; }
     }
 
+    public static class ChildExt
+    {
+        public static List<object> ParentTree(this IChild self)
+        {
+            List<object> objs = new List<object>();
+            object obj = self;
+            while (obj != null)
+            {
+                objs.Add(obj);
+                if (obj is IChild)
+                    obj = ((IChild)obj).Parent;
+                else
+                    break;
+            }
+
+            return objs;
+        }
+    }
+
     public interface IParent
     {
         bool ContainsAnyBundleEntries(Idstring package = null);

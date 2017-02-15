@@ -70,13 +70,18 @@ public class HashlistScraper
         clock.Start();
         error_output.Write("Hashlist Scraper executed" + "\n");
         error_output.Flush();
-        foreach (KeyValuePair<string, FileEntry> entry in browser.RawFiles)
+        HashIndex.Load(Path.Combine(Definitions.HashDir, "others"), null, true);
+        foreach (string file in Directory.EnumerateFiles(Path.Combine(Definitions.HashDir, Definitions.AddedHashDir)))
+            HashIndex.Load(file, HashIndex.HashType.Others, true);
+        foreach (KeyValuePair<Tuple<Idstring, Idstring, Idstring>, FileEntry> entry in browser.RawFiles)
         {
             this.ProcessFile(entry.Value);
         }
         //this.ProcessFolder(browser.Root);
         //Path.Combine(Definitions.HashDir, hashlist_tag)
-        HashIndex.GenerateHashList(Path.Combine(Definitions.HashDir, hashlist_tag), hashlist_tag);
+        HashIndex.GenerateHashList(Path.Combine(Definitions.HashDir, "paths"), "paths");
+        HashIndex.GenerateHashList(Path.Combine(Definitions.HashDir, "others"), "others");
+        HashIndex.temp = new Dictionary<ulong, Idstring>();
         clock.Stop();
         error_output.Write("Scrape operation took {0} seconds" + "\n", clock.Elapsed.TotalSeconds.ToString());
         error_output.Close();
@@ -96,7 +101,9 @@ public class HashlistScraper
     private void ProcessFile(FileEntry file)
     {
         if (file.BundleEntries.Count == 0 || !FileProcessors.ContainsKey(file._extension.ToString()) || (ignore_files_with_path && file._path.HasUnHashed))
+        {
             return;
+        }
 
         try
         {
@@ -109,11 +116,15 @@ public class HashlistScraper
             error_output.Write(exc.StackTrace + "\n");
             error_output.Flush();
         }
+
+        GC.Collect();
     }
 
     private void AddHash(string hash)
     {
-        if (HashIndex.AddHash(hash, hashlist_tag))
+        string tag = HashIndex.TypeOfHash(hash) == HashIndex.HashType.Path ? "paths" : "others";
+        Idstring ids;
+        if (HashIndex.AddHash(hash, out ids, tag))
             error_output.Write("Added hash {0}\n", hash);
 
     }
@@ -125,13 +136,17 @@ public class HashlistScraper
         string xml_doc = xml;
         if (xml == null)
         {
-            using (var reader = new StreamReader(file.FileStream()))
+            Stream str = file.FileStream();
+            using (var reader = new StreamReader(str))
                 xml_doc = reader.ReadToEnd();
+
+            str = null;
         }
 
         try
         {
             doc.LoadXml(xml_doc);
+            xml_doc = null;
         }
         catch(Exception exc)
         {
@@ -275,7 +290,9 @@ public class HashlistScraper
         {
 
         }*/
-        string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(file.FileStream(), true);
+        Stream str = file.FileStream();
+        string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(str, true);
+        str = null;
         this.ProcessXML(file, lookup, xml);
     }
 
@@ -283,6 +300,7 @@ public class HashlistScraper
     {
         this.ProcessScriptData(file, new List<XMLTagLookup> {
             new XMLTagLookup { node_name="unit_data", value=new[]{"name" } },
+            new XMLTagLookup { node_name="table", value=new[]{"folder" } },
             new XMLTagLookup { node_name = "editable_gui", value=new[]{"font" } }
         });
     }
@@ -298,7 +316,9 @@ public class HashlistScraper
     private void ProcessWorld(FileEntry file)
     {
         this.ProcessScriptData(file, new List<XMLTagLookup> {
-            new XMLTagLookup { node_name="environment_values", value=new[]{"environment" } }
+            new XMLTagLookup { node_name="environment_values", value=new[]{"environment" } },
+            new XMLTagLookup { node_name="table", value=new[]{ "environment" } },
+            new XMLTagLookup { node_name="unit_data", value=new[]{ "name" } }
         });
     }
 

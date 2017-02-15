@@ -1,12 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="NameIndex.cs" company="Zwagoth">
-//   This code is released into the public domain by Zwagoth.
-// </copyright>
-// <summary>
-//   The name entry.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-namespace DieselEngineFormats.Bundle
+﻿namespace DieselEngineFormats.Bundle
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +8,7 @@ namespace DieselEngineFormats.Bundle
     /// <summary>
     ///     The name index.
     /// </summary>
-    public class BundleDatabase
+    public class PackageDatabase
     {
         #region Fields
 
@@ -29,11 +21,11 @@ namespace DieselEngineFormats.Bundle
         {
             get
             {
-                return _entries;
+                return this._entries;
             }
             set
             {
-                _entries = value;
+                this._entries = value;
             }
         }
 
@@ -46,11 +38,11 @@ namespace DieselEngineFormats.Bundle
         {
             get
             {
-                return _languages;
+                return this._languages;
             }
             set
             {
-                _languages = value;
+                this._languages = value;
             }
         }
 
@@ -58,9 +50,9 @@ namespace DieselEngineFormats.Bundle
 
         #region Public Methods and Operators
 
-		public BundleDatabase () { }
+		public PackageDatabase () { }
 
-		public BundleDatabase (string path)
+		public PackageDatabase (string path)
 		{
 			this.Load (path);	
 		}
@@ -153,7 +145,7 @@ namespace DieselEngineFormats.Bundle
         public List<DatabaseEntry> GetDatabaseEntries()
         {
             List<DatabaseEntry> entries = new List<DatabaseEntry>();
-            entries.AddRange(_entries.Values);
+            entries.AddRange(this._entries.Values);
             return entries;
         }
 

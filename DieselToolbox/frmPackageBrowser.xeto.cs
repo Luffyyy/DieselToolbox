@@ -1,4 +1,7 @@
-﻿using System;
+﻿#pragma warning disable CS0649
+#pragma warning disable CS0196
+
+using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
@@ -24,6 +27,7 @@ namespace DieselToolbox
         ProgressDialog prgDialog;
 		CheckMenuItem cbtnLocalHashlists;
 		CheckMenuItem cbtnExtractFullFileStructure;
+        BreadcrumbBar brdBar;
 
 		private PackageBrowser Browser;
 
@@ -32,6 +36,7 @@ namespace DieselToolbox
 
 		public frmPackageBrowser ()
 		{
+            App.Instance.LoadScripts();
 			XamlReader.Load(this);
             
 			/*spltMain.Panel1 = treeMain = new TreeView { Width = 200 };
@@ -48,30 +53,30 @@ namespace DieselToolbox
             grdFolder.MouseMove += ViewMouseMove;
 
             grdFolder.CellDoubleClick += GrdFolder_CellDoubleClick;*/
-            grdFolder.CellClick += ViewDragMouseClick;
+            this.grdFolder.CellClick += this.ViewDragMouseClick;
 
             /*treeMain.MouseUp += ViewDragMouseUp;
             treeMain.MouseMove += ViewMouseMove;*/
             //treeMain.MouseDown += ViewDragMouseClick;
             this.Closed += (sender, e) => { Application.Instance.Quit(); };
-            treeMain.NodeMouseClick += ViewDragMouseClick;
+            this.treeMain.NodeMouseClick += this.ViewDragMouseClick;
 			List<MenuItem> context_items = new List<MenuItem> ();
 
 			ButtonMenuItem viewItem = new ButtonMenuItem{ Text = "View" };
 			viewItem.Click += (object sender, EventArgs e) => {
 				FileEntry childItem;
-				if ((childItem = grdFolder.SelectedItem as FileEntry) != null)
-					Browser.TempFileManager.ViewFile(childItem);
+				if ((childItem = this.grdFolder.SelectedItem as FileEntry) != null)
+                    this.Browser.TempFileManager.ViewFile(childItem);
 			};
 			context_items.Add (viewItem);
 
 			ButtonMenuItem propItem = new ButtonMenuItem{ Text = "Properties" };
-			propItem.Click += PropItem_Click;
+			propItem.Click += this.PropItem_Click;
 			context_items.Add (propItem);
 
-			grdFolder.ContextMenu = new ContextMenu(context_items);
+            this.grdFolder.ContextMenu = new ContextMenu(context_items);
 
-			grdFolder.Columns.Add (new GridColumn{
+            this.grdFolder.Columns.Add (new GridColumn{
 				DataCell = new ImageTextCell{
                     ImageBinding = Binding.Property<IViewable, Image>(r => r.Icon),
 					TextBinding = Binding.Property<IViewable, string>(r => r.Name)
@@ -79,41 +84,47 @@ namespace DieselToolbox
 				HeaderText = "Name"
 			});
 
-			grdFolder.Columns.Add (new GridColumn{
+            this.grdFolder.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
                     Binding = Binding.Property<IViewable, string>(r => r.Type)
 				},
 				HeaderText = "Type"
 			});
 
-			grdFolder.Columns.Add (new GridColumn{
+            this.grdFolder.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
                     Binding = Binding.Property<IViewable, string>(r => r.Size)
 				},
 				HeaderText = "Size"
 			});
-            
+
             /*grdFolder.KeyDown += (sender, e) => {
                 if (e.Key.Equals(Keys.Enter)) {
 					Browser.SelectedFolder = (IParent)grdFolder.SelectedItem;
                 }
             };*/
 
-            btnInspectPackage.Click += (sender, e) => {
+            this.btnInspectPackage.Click += (sender, e) => {
                 Console.WriteLine("Inspect Package {0}", this._focused_package?.ToString());
             };
 
-            cbtnLocalHashlists.Checked = StaticData.Settings.Data.StoreLocalHashlists;
-            cbtnExtractFullFileStructure.Checked = StaticData.Settings.Data.ExtractFullFileStructure;
+            this.cbtnLocalHashlists.Checked = StaticData.Settings.Data.StoreLocalHashlists;
+            this.cbtnExtractFullFileStructure.Checked = StaticData.Settings.Data.ExtractFullFileStructure;
 
-			cbtnLocalHashlists.CheckedChanged += (object sender, EventArgs e) => {
-				StaticData.Settings.Data.StoreLocalHashlists = cbtnLocalHashlists.Checked;
+            this.cbtnLocalHashlists.CheckedChanged += (object sender, EventArgs e) => {
+				StaticData.Settings.Data.StoreLocalHashlists = this.cbtnLocalHashlists.Checked;
 				StaticData.Settings.Save();
 			};
-            cbtnExtractFullFileStructure.CheckedChanged += (object sender, EventArgs e) => {
+            this.cbtnExtractFullFileStructure.CheckedChanged += (object sender, EventArgs e) => {
                 StaticData.Settings.Data.ExtractFullFileStructure = ((CheckMenuItem)sender).Checked;
                 StaticData.Settings.Save();
             };
+
+            this.brdBar.SelectedItemChanged += (sender, e) => {
+                if (this.brdBar.SelectedItem != this.Browser.SelectedFolder)
+                    this.Browser.SelectedFolder = this.brdBar.SelectedItem as IParent;
+            };
+
 
             this.Closed += (sender, e) =>
             {
@@ -123,11 +134,18 @@ namespace DieselToolbox
             this.PopulateScripts();
         }
 
+        void stckSizeChanged(object sender, EventArgs e)
+        {
+            /*brdBar.Size = ((Control)sender).Size;
+            brdBar.tblMain.Size = brdBar.Size;
+            brdBar.stckPath.Size = brdBar.Size;*/
+        }
+
         void ViewMouseMove(object sender, MouseEventArgs e)
         {
             dynamic sent = sender as dynamic;
-            PointF diff = (DragStartLocation - e.Location);
-            if (e.Buttons == MouseButtons.Primary && sent.SelectedItem != null && DraggingDrop
+            PointF diff = (this.DragStartLocation - e.Location);
+            if (e.Buttons == MouseButtons.Primary && sent.SelectedItem != null && this.DraggingDrop
                 && Math.Abs(diff.X) > Definitions.MinimumHorizontalDragDistance &&
                 Math.Abs(diff.Y) > Definitions.MinimumVerticalDragDistance)
             {
@@ -154,23 +172,23 @@ namespace DieselToolbox
         {
             if (Mouse.Buttons == MouseButtons.Primary)
             {
-                DragStartLocation = Mouse.Position;
-                DraggingDrop = true;
+                this.DragStartLocation = Mouse.Position;
+                this.DraggingDrop = true;
             }
         }
 
         void ViewDragMouseUp(object sender, MouseEventArgs e)
         {
             if (e.Buttons == MouseButtons.Primary)
-                DraggingDrop = false;
+                this.DraggingDrop = false;
         }
 
         void btnInspectPackage_Click(object sender, EventArgs e)
         {
-            if (_focused_package != null)
+            if (this._focused_package != null)
             {
-                PackageHeader package = Browser.PackageHeaders[_focused_package];
-                new PackageInspector(package, Browser.BundleDB).Show();
+                PackageHeader package = this.Browser.PackageHeaders[this._focused_package];
+                new PackageInspector(package, this.Browser.BundleDB).Show();
             }
             else
                 MessageBox.Show("You must select a package to inspect!", "Further Action Required!", MessageBoxType.Information);
@@ -179,7 +197,7 @@ namespace DieselToolbox
         void PropItem_Click (object sender, EventArgs e)
 		{
 			IViewable childItem;
-			if ((childItem = grdFolder.SelectedItem as IViewable) != null) {
+			if ((childItem = this.grdFolder.SelectedItem as IViewable) != null) {
 				PropertiesDialog prop = new PropertiesDialog(childItem);
 				prop.Show();
 			}
@@ -189,9 +207,9 @@ namespace DieselToolbox
 		{
 			if (e.Item != null) {
 				if (e.Item is IParent)
-					Browser.SelectedFolder = (IParent)e.Item;
+                    this.Browser.SelectedFolder = (IParent)e.Item;
 				else if (e.Item is FileEntry)
-					Browser.TempFileManager.ViewFile((FileEntry)e.Item);
+                    this.Browser.TempFileManager.ViewFile((FileEntry)e.Item);
 			}
 		}
 			
@@ -199,13 +217,13 @@ namespace DieselToolbox
 		void OnTreeItemCollapsed (object sender, TreeViewItemEventArgs e)
 		{
 			((TreeItem)e.Item).Image = Definitions.FolderIcon ["closed"];
-            treeMain.RefreshItem((TreeItem)e.Item);
+            this.treeMain.RefreshItem((TreeItem)e.Item);
         }
 
 		void OnTreeItemExpanded (object sender, TreeViewItemEventArgs e)
 		{
 			((TreeItem)e.Item).Image = Definitions.FolderIcon ["open"];
-            treeMain.RefreshItem((TreeItem)e.Item);
+            this.treeMain.RefreshItem((TreeItem)e.Item);
         }
 
         public void LoadDatabaseClicked(object sender, EventArgs e)
@@ -229,21 +247,21 @@ namespace DieselToolbox
 				return;
 			}
 			this.Title = String.Format("{0} - Package Browser", path);
-			treeMain.DataStore = null;
-			treeMain.RefreshData ();
-            _focused_package = null;
-            pckList.Items.Clear();
+            this.treeMain.DataStore = null;
+            this.treeMain.RefreshData ();
+            this._focused_package = null;
+            this.pckList.Items.Clear();
 
             this.grdFolder.DataStore = null;
 
-			Browser = new PackageBrowser();
-			Browser.OnWorkingDirectoryUpdated += this.WorkingDirectorySet;
-			Browser.OnFolderSelected += this.FolderSelected;
-			prgDialog = new ProgressDialog();
+            this.Browser = new PackageBrowser();
+            this.Browser.OnWorkingDirectoryUpdated += this.WorkingDirectorySet;
+            this.Browser.OnFolderSelected += this.FolderSelected;
+            this.prgDialog = new ProgressDialog();
 
-    		Browser.LoadDatabase(path, (str) => prgDialog.lblProgressString.Text = str);
+            this.Browser.LoadDatabase(path, (str) => this.prgDialog.lblProgressString.Text = str);
 
-			prgDialog.ShowModalAsync(this);
+            this.prgDialog.ShowModalAsync(this);
 		}
 
         public void PopulateScripts()
@@ -251,9 +269,9 @@ namespace DieselToolbox
             foreach (KeyValuePair<string, dynamic> script in ScriptActions.Scripts)
             {
                 ButtonMenuItem btn = new ButtonMenuItem { Text = script.Value.title, ID = script.Key, Tag = script.Value };
-                btn.Click += ScriptBTN_Click;
+                btn.Click += this.ScriptBTN_Click;
 
-                btnScripts.Items.Add(btn);
+                this.btnScripts.Items.Add(btn);
             }
         }
 
@@ -274,6 +292,7 @@ namespace DieselToolbox
                 {
                     script.execute(this.Browser);
                     Console.WriteLine("Finished script {0}", key);
+                    GC.Collect();
                 }
                 catch(Exception exc)
                 {
@@ -291,32 +310,32 @@ namespace DieselToolbox
 
 		private void WorkingDirectorySet(object sender, EventArgs e)
 		{
-			prgDialog.lblProgressString.Text = "Finishing Processes";
+            this.prgDialog.lblProgressString.Text = "Finishing Processes";
 
 			this.SetupTreeItems ();
-
-            SortedDictionary<Idstring, PackageHeader> packages = Browser.PackageHeaders;
+            this.brdBar.FocusedItem = this.Browser.Root;
+            this.Browser.SelectedFolder = this.Browser.Root;
+            SortedDictionary<Idstring, PackageHeader> packages = this.Browser.PackageHeaders;
 			AddPackagesToMenu (packages);
 
-			prgDialog.Close ();
+            this.prgDialog.Close ();
 		}
 
 		string show_all_radio = "(Show All)";
 		private void AddPackagesToMenu(SortedDictionary<Idstring, PackageHeader> pckIds)
 		{
 			RadioMenuItem prevItem = new RadioMenuItem{
-				Tag = new Idstring(show_all_radio, true),
-				Text = show_all_radio
+				Text = this.show_all_radio
 			};
-			prevItem.CheckedChanged += OnPackageChanged;
-			pckList.Items.Add (prevItem);
+			prevItem.CheckedChanged += this.OnPackageChanged;
+            this.pckList.Items.Add (prevItem);
 			foreach (KeyValuePair<Idstring, PackageHeader> ids in pckIds) {
 				RadioMenuItem item = new RadioMenuItem(prevItem) {
-					Tag = ids.Value,
+					Tag = ids.Key,
 					Text = ids.Key.ToString(),
 				};
-				item.CheckedChanged += OnPackageChanged;
-				pckList.Items.Add (item);
+				item.CheckedChanged += this.OnPackageChanged;
+                this.pckList.Items.Add (item);
 				prevItem = item;
 			}
 		}
@@ -326,31 +345,30 @@ namespace DieselToolbox
 		{
 			RadioMenuItem item;
 			if ((item = (RadioMenuItem)sender).Checked) {
-				if ((_focused_package = ((PackageHeader)item.Tag).Name).UnHashed == show_all_radio)
-					_focused_package = null;
+                this._focused_package = item.Tag as Idstring;
 
 				this.SetupTreeItems ();
 
-				this.Browser.SelectedFolder = AssetsTree.Tag as IParent;
+				this.Browser.SelectedFolder = this.AssetsTree.Tag as IParent;
 			}
 		}
 
 		private void SetupTreeItems()
 		{
-			AssetsTree = new TreeItem()
+            this.AssetsTree = new TreeItem()
 			{
 				Text = "assets",
 				Image = Definitions.FolderIcon["open"],
-				Tag = Browser.Root
+				Tag = this.Browser.Root
 			};
-            
-            //AssetsTree.Expanded = true;
-			AssetsTree.Expanded = true;
 
-			Browser.Root.AddToTree(AssetsTree, _focused_package);
+            //AssetsTree.Expanded = true;
+            this.AssetsTree.Expanded = true;
+
+            this.Browser.Root.AddToTree(this.AssetsTree, this._focused_package);
 
 			TreeItemCollection treeItemColl = new TreeItemCollection ();
-            treeItemColl.Add (AssetsTree);
+            treeItemColl.Add (this.AssetsTree);
 
 			this.treeMain.DataStore = treeItemColl;
 		}
@@ -359,7 +377,9 @@ namespace DieselToolbox
 		{
 			PackageBrowser brows = sender as PackageBrowser;
 
-            this.grdFolder.DataStore = (brows.SelectedFolder).ChildObjects(_focused_package);
+            this.grdFolder.DataStore = (brows.SelectedFolder).ChildObjects(this._focused_package);
+            if (this.brdBar.SelectedItem != brows.SelectedFolder)
+                this.brdBar.FocusedItem = brows.SelectedFolder;
 		}
 
 		void OnTreeFolderSelected(object sender, EventArgs e)

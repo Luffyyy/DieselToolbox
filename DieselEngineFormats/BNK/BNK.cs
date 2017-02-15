@@ -32,8 +32,8 @@ namespace DieselEngineFormats.BNK
 
         public BNK()
         {
-            isLoaded = false;
-            loadPercent = 0.0f;
+            this.isLoaded = false;
+            this.loadPercent = 0.0f;
         }
 
         public void LoadBNK(Stream instream)
@@ -44,7 +44,7 @@ namespace DieselEngineFormats.BNK
                 while (instream.Position < instream.Length)
                 {
                     this.ProgressMutex.WaitOne();
-                    loadPercent = (float)((100 * instream.Position) / instream.Length);
+                    this.loadPercent = (float)((100 * instream.Position) / instream.Length);
                     this.ProgressMutex.ReleaseMutex();
 
                     //Find all sections
@@ -52,23 +52,23 @@ namespace DieselEngineFormats.BNK
                     //long offset = fs.Position+4;
                     object section = new object();
 
-                    if (section_tag == BKHD_tag)
+                    if (section_tag == this.BKHD_tag)
                     {
                         section = new BKHD(br);
                     }
-                    else if (section_tag == DIDX_tag)
+                    else if (section_tag == this.DIDX_tag)
                     {
                         section = new DIDX(br);
                     }
-                    else if (section_tag == DATA_tag)
+                    else if (section_tag == this.DATA_tag)
                     {
                         section = new DATA(br);
                     }
-                    else if (section_tag == STID_tag)
+                    else if (section_tag == this.STID_tag)
                     {
                         section = new STID(br);
                     }
-                    else if (section_tag == HIRC_tag)
+                    else if (section_tag == this.HIRC_tag)
                     {
                         section = new HIRC(br);
                     }
@@ -78,7 +78,7 @@ namespace DieselEngineFormats.BNK
                     }
 
                     //Console.WriteLine(section);
-                    sections.Add(section);
+                    this.sections.Add(section);
                 }
             }
 
@@ -92,10 +92,10 @@ namespace DieselEngineFormats.BNK
             */
 
             //organize DATA section and compile a list of sound files
-            DIDX didx_section = sections.FirstOrDefault(e => e is DIDX) as DIDX;
-            DATA data_section = sections.FirstOrDefault(e => e is DATA) as DATA;
-            HIRC hirc_section = sections.FirstOrDefault(e => e is HIRC) as HIRC;
-            Dictionary<uint, UInt32> fileOffsets = new Dictionary<uint, uint>();
+            DIDX didx_section = this.sections.FirstOrDefault(e => e is DIDX) as DIDX;
+            DATA data_section = this.sections.FirstOrDefault(e => e is DATA) as DATA;
+            HIRC hirc_section = this.sections.FirstOrDefault(e => e is HIRC) as HIRC;
+            Dictionary<uint, uint> fileOffsets = new Dictionary<uint, uint>();
 
             if (didx_section != null && data_section != null)
             {
@@ -191,14 +191,14 @@ namespace DieselEngineFormats.BNK
                     sf.data_offset = 0;
             }
 
-            isLoaded = true;
+            this.isLoaded = true;
         }
 
         public void GenerateBNK(MemoryStream outstream)
         {
             BinaryWriter bw = new BinaryWriter(outstream);
 
-            foreach (object obj in sections)
+            foreach (object obj in this.sections)
             {
                 if (obj is BKHD)
                     (obj as BKHD).StreamWrite(bw);

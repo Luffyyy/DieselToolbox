@@ -21,9 +21,9 @@ namespace DieselEngineFormats
             br.ReadUInt64();
             ulong HashedID = br.ReadUInt64();
             br.ReadUInt32();
-            StringPosition = br.ReadUInt32();
+            this.StringPosition = br.ReadUInt32();
 
-            ID = HashIndex.GetAny(HashedID) ?? new Idstring(HashedID);
+            this.ID = HashIndex.Get(HashedID);
         }
     }
 
@@ -95,13 +95,13 @@ namespace DieselEngineFormats
             {
                 StringEntry strEntry = new StringEntry(br);
 
-                if (strEntry.ID.HasUnHashed)
-                    LocalizationStrings.Add(strEntry);
+                //if (strEntry.ID.HasUnHashed)
+                    this.LocalizationStrings.Add(strEntry);
             }
 
-            for (int i = 0; i < LocalizationStrings.Count; i++ )
+            for (int i = 0; i < this.LocalizationStrings.Count; i++ )
             {
-                StringEntry strEntry = LocalizationStrings[i];
+                StringEntry strEntry = this.LocalizationStrings[i];
 
                 br.BaseStream.Position = strEntry.StringPosition;
 

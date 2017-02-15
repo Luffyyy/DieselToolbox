@@ -1,23 +1,12 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="BundleHeader.cs" company="Zwagoth">
-//   This code is released into the public domain by Zwagoth.
-// </copyright>
-// <summary>
-//   The bundle entry.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-using DieselEngineFormats.Utils;
-using System.Globalization;
-
-
-namespace DieselEngineFormats.Bundle
+﻿namespace DieselEngineFormats.Bundle
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.IO;
+    using Utils;
 
-    public class BundleFooterEntry
+    public class PackageFooterEntry
     {
         public Idstring Extension { get; set; }
 
@@ -25,14 +14,13 @@ namespace DieselEngineFormats.Bundle
 
 		public PackageHeader Parent { get; set; }
 
-        public BundleFooterEntry(BinaryReader br)
+        public PackageFooterEntry(BinaryReader br)
         {
-            Extension = HashIndex.GetExtension(br.ReadUInt64());
-            Path = HashIndex.GetPath(br.ReadUInt64());
+            this.Extension = HashIndex.Get(br.ReadUInt64());
+            this.Path = HashIndex.Get(br.ReadUInt64());
         }
     }
     
-
     /// <summary>
     ///     The bundle header.
     /// </summary>
@@ -52,23 +40,23 @@ namespace DieselEngineFormats.Bundle
         {
             get
             {
-                return _config;
+                return this._config;
             }
             set
             {
-                _config = value;
+                this._config = value;
             }
         }
 
         /// <summary>
         /// The _entries.
         /// </summary>
-        private List<BundleFileEntry> _entries = new List<BundleFileEntry>();
+        private List<PackageFileEntry> _entries = new List<PackageFileEntry>();
 
         /// <summary>
         /// The _references.
         /// </summary>
-        private List<BundleFooterEntry> _references = new List<BundleFooterEntry>();
+        private List<PackageFooterEntry> _references = new List<PackageFooterEntry>();
 
 		private Idstring _name;
 
@@ -79,7 +67,7 @@ namespace DieselEngineFormats.Bundle
         /// <summary>
         ///     Gets list of bundle file entries
         /// </summary>
-        public List<BundleFileEntry> Entries
+        public List<PackageFileEntry> Entries
         {
             get
             {
@@ -90,7 +78,7 @@ namespace DieselEngineFormats.Bundle
         /// <summary>
         ///     Gets list of reference entries
         /// </summary>
-        public List<BundleFooterEntry> References
+        public List<PackageFooterEntry> References
         {
             get
             {
@@ -109,8 +97,8 @@ namespace DieselEngineFormats.Bundle
         public List<uint> Header { get; set; }
 
         public Idstring Name { 
-			get { return _name; } 
-			set { _name = value; } 
+			get { return this._name; } 
+			set { this._name = value; } 
 		}
 
         #endregion
@@ -151,35 +139,39 @@ namespace DieselEngineFormats.Bundle
                     {
                         bool confSet = false;
 
+                        if (bundle_path.Contains("all_"))
+                            Console.WriteLine();
+
                         this.Header = new List<uint>{
                             br.ReadUInt32(), //ref offset
 							br.ReadUInt32(), //tag / count
 							br.ReadUInt32(), //linux:tag / count
  							br.ReadUInt32(), // offset / count
 						};
-                        if (Header[1] != Header[2]) this.Header.Add(br.ReadUInt32());
+
+                        if (this.Header[1] != this.Header[2]) this.Header.Add(br.ReadUInt32());
 
                         uint refOffset = this.Header[0];
 
                         uint itemCount = 0, offset = 0;
 
-                        for (int i = 1; i < (Header.Count - 1); i++)
+                        for (int i = 1; i < (this.Header.Count - 1); i++)
                         {
-                            if (Header[i] == Header[i + 1])
+                            if (this.Header[i] == this.Header[i + 1])
                             {
-                                itemCount = Header[i];
-                                if (Header.Count <= i + 2)
+                                itemCount = this.Header[i];
+                                if (this.Header.Count <= i + 2)
                                 {
-                                    Header.Add(br.ReadUInt32());
+                                    this.Header.Add(br.ReadUInt32());
                                 }
-                                offset = Header[i + 2];
+                                offset = this.Header[i + 2];
                                 if (i != 1)
                                 {
-                                    if (Header[1] == 0)
+                                    /*if (this.Header[1] == 0)
                                     {
                                         offset += 4;
                                     }
-                                    else
+                                    else*/
                                         this.HasLengthField = true;
                                 }
 
@@ -214,14 +206,14 @@ namespace DieselEngineFormats.Bundle
 
                         for (int i = 0; i < itemCount; ++i)
                         {
-                            var be = new BundleFileEntry(br, this.HasLengthField) { Parent = this };
+                            var be = new PackageFileEntry(br, this.HasLengthField) { Parent = this };
 
                             this._entries.Add(be);
 
                             if (this.HasLengthField || i <= 0)
                                 continue;
 
-                            BundleFileEntry pbe = this._entries[i - 1];
+                            PackageFileEntry pbe = this._entries[i - 1];
 							pbe.Length = (int)(be.Address - pbe.Address);
                         }
 
@@ -303,7 +295,7 @@ namespace DieselEngineFormats.Bundle
 
             for (int i = 0; i < count; i++)
             {
-                this._references.Add(new BundleFooterEntry(br));
+                this._references.Add(new PackageFooterEntry(br));
             }
 
         }
@@ -350,7 +342,7 @@ namespace DieselEngineFormats.Bundle
             else
                 writer.Write(config.EntryStartTag);
 
-            foreach (BundleFileEntry entry in this.Entries)
+            foreach (PackageFileEntry entry in this.Entries)
             {
                 entry.WriteEntry(writer, this.HasLengthField);
             }
@@ -366,9 +358,9 @@ namespace DieselEngineFormats.Bundle
         /// </summary>
         public void SortEntriesId()
         {
-            int oldcount = _entries.Count();
-            _entries = _entries.OrderBy(o => o.ID).ToList();
-            if (oldcount != _entries.Count())
+            int oldcount = this._entries.Count();
+            this._entries = this._entries.OrderBy(o => o.ID).ToList();
+            if (oldcount != this._entries.Count())
                 Console.WriteLine();
         }
 
@@ -377,10 +369,10 @@ namespace DieselEngineFormats.Bundle
         /// </summary>
         public void SortEntriesAddress()
         {
-            int oldcount = _entries.Count();
-            _entries = _entries.OrderBy(o => o.Length).ToList(); // Order by length, so 0 is always first
-            _entries = _entries.OrderBy(o => o.Address).ToList(); //Order by address
-            if (oldcount != _entries.Count())
+            int oldcount = this._entries.Count();
+            this._entries = this._entries.OrderBy(o => o.Length).ToList(); // Order by length, so 0 is always first
+            this._entries = this._entries.OrderBy(o => o.Address).ToList(); //Order by address
+            if (oldcount != this._entries.Count())
                 Console.WriteLine();
         }
 

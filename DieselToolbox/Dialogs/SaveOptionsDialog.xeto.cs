@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0649
+
+using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
@@ -22,7 +24,7 @@ namespace DieselToolbox
 			this.cmbOptions.SelectedIndex = 0;
 
 			this.cmbOptions.SelectedIndexChanged += (object sender, EventArgs e) => {
-				SelectedExporter = this.cmbOptions.SelectedIndex == 0 ? null : Exporters[this.cmbOptions.SelectedKey];
+                this.SelectedExporter = this.cmbOptions.SelectedIndex == 0 ? null : this.Exporters[this.cmbOptions.SelectedKey];
 			};
 
 			if (ScriptActions.Converters.ContainsKey (type))

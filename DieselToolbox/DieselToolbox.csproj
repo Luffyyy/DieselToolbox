@@ -45,6 +45,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BreadcrumbBar.xeto.cs">
+      <DependentUpon>BreadcrumbBar.xeto</DependentUpon>
+    </Compile>
     <Compile Include="BrowserInterfaces.cs" />
     <Compile Include="Dialogs\PackageInspector.xeto.cs">
       <DependentUpon>PackageInspector.xeto</DependentUpon>
@@ -76,7 +79,13 @@
     <Content Include="scripts\HashlistScraperScript\main.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\HeistExtractor\main.cs">
+    <Content Include="scripts\ParserTesting\main.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="scripts\HeistExtractor\main.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Content Include="scripts\HashlistOutputterExt\main.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Compile Include="TempFileManager.cs" />
@@ -87,9 +96,6 @@
       <DependentUpon>StringViewer.xeto</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.cs" />
-    <Compile Include="Scripting.evaluator.cs" />
-    <Compile Include="Scripting.Extensions.cs" />
-    <Compile Include="Scripting.native.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="MainForm.xeto">
@@ -124,6 +130,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Windows\StringViewer.xeto">
       <LogicalName>DieselToolbox.StringViewer.xeto</LogicalName>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Dialogs\PackageInspector.xeto">
       <LogicalName>DieselToolbox.PackageInspector.xeto</LogicalName>
@@ -197,6 +204,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="BreadcrumbBar.xeto">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Windows\FontEditor.xaml.cs" />
     <None Include="Windows\PackageInspector.xaml.cs" />
@@ -205,9 +215,9 @@
     <Content Include="scripts\CSV_Strings\main.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="scripts\Diesel_Strings\main.py">
+    <None Include="scripts\Diesel_Strings\main.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </None>
     <Content Include="scripts\JSON_Strings\main.py">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -218,10 +228,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="BrowserWindow.xaml.cs" />
-    <None Include="PropertiesWindow.xaml.cs" />
-    <None Include="Hashlists\main.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="Hashlists\main.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DieselEngineFormats\DieselEngineFormats.csproj">

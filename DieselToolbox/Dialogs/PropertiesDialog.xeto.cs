@@ -24,7 +24,7 @@ namespace DieselToolbox
 
 			this.grdEntries.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
-					Binding = Binding.Property<BundleFileEntry, Idstring>(r => r.PackageName).Convert(val => val?.ToString()),
+					Binding = Binding.Property<PackageFileEntry, Idstring>(r => r.PackageName).Convert(val => val?.ToString()),
 					
 				},
 				HeaderText = "Package"
@@ -32,28 +32,28 @@ namespace DieselToolbox
 
 			this.grdEntries.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
-					Binding = Binding.Property<BundleFileEntry, Idstring>(r => r.PackageName).Convert(val => val?.HashedString)
+					Binding = Binding.Property<PackageFileEntry, Idstring>(r => r.PackageName).Convert(val => val?.HashedString)
 				},
 				HeaderText = "Package (Hashed)"
 			});
 
 			this.grdEntries.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
-					Binding = Binding.Property<BundleFileEntry, uint>(r => r.Address).Convert(val => val.ToString())
+					Binding = Binding.Property<PackageFileEntry, uint>(r => r.Address).Convert(val => val.ToString())
 				},
 				HeaderText = "Addess"
 			});
 
 			this.grdEntries.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
-					Binding = Binding.Property<BundleFileEntry, int>(r => r.Length).Convert(val => val.ToString())
+					Binding = Binding.Property<PackageFileEntry, int>(r => r.Length).Convert(val => val.ToString())
 				},
 				HeaderText = "Length"
 			});
 
 			this.grdEntries.Columns.Add (new GridColumn{
 				DataCell = new TextBoxCell{
-					Binding = Binding.Property<BundleFileEntry, string>(r => r.FileSize)
+					Binding = Binding.Property<PackageFileEntry, string>(r => r.FileSize)
 				},
 				HeaderText = "Size"
 			});

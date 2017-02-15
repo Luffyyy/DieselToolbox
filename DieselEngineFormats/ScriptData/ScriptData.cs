@@ -42,9 +42,9 @@
         public ScriptData(string path)
         {
             this.path =  path;
-            using (fs_copy = new FileStream(this.path, FileMode.Open, FileAccess.Read))
+            using (this.fs_copy = new FileStream(this.path, FileMode.Open, FileAccess.Read))
             {
-                this.br = new BinaryReader(fs_copy);
+                this.br = new BinaryReader(this.fs_copy);
                 this.ReadHeader();
                 this.Root = this.ParseItem();
                 this.br.Close();
@@ -109,51 +109,51 @@
             uint tag = this.br.ReadUInt32();
 
             if (tag == 568494624)
-                linux = true;
+                this.linux = true;
 
-            if (!linux)
+            if (!this.linux)
 			    this.Seek(12);
             else
                 this.Seek(16);
 
             this.floatOffset = this.ReadOffset();
 
-            if (!linux)
+            if (!this.linux)
                 this.Seek(28);
             else
                 this.Seek(40);
 
             this.stringOffset = this.ReadOffset();
 
-            if (!linux)
+            if (!this.linux)
                 this.Seek(44);
             else
                 this.Seek(64);
 
             this.vectorOffset = this.ReadOffset();
 
-            if (!linux)
+            if (!this.linux)
                 this.Seek(60);
             else
                 this.Seek(88);
 
             this.quaternionOffset = this.ReadOffset();
 
-            if (!linux)
+            if (!this.linux)
                 this.Seek(76);
             else
                 this.Seek(112);
 
             this.idstringOffset = this.ReadOffset();
 
-            if (!linux)
+            if (!this.linux)
                 this.Seek(92);
             else
                 this.Seek(136);
 
             this.tableOffset = this.ReadOffset();
 
-            if (!linux)
+            if (!this.linux)
                 this.Seek(100);
             else
                 this.Seek(152);
@@ -161,7 +161,7 @@
 
         private int ReadOffset()
         {
-            if (linux)
+            if (this.linux)
                 return (int)this.br.ReadInt64();
             else
                 return this.br.ReadInt32();
@@ -197,7 +197,7 @@
             string return_string = "";
             this.SeekPush();
 
-            this.Seek(this.stringOffset + (index * (linux ? 16 : 8)) + (linux ? 8 : 4));
+            this.Seek(this.stringOffset + (index * (this.linux ? 16 : 8)) + (this.linux ? 8 : 4));
             int real_offset = this.ReadOffset();
 
             this.Seek(real_offset);
@@ -218,7 +218,7 @@
             var return_table = new Dictionary<string, object>();
 			this.SeekPush ();
 
-            this.Seek(this.tableOffset + (index * (linux ? 32 : 20)));
+            this.Seek(this.tableOffset + (index * (this.linux ? 32 : 20)));
             int metatable_offset = this.ReadOffset();
 
             int item_count = this.br.ReadInt32();
@@ -283,16 +283,16 @@
 
             int meta = -1;
             if (currentData.ContainsKey("_meta"))
-                meta = strings.LastIndexOf((string)currentData["_meta"]);
+                meta = this.strings.LastIndexOf((string)currentData["_meta"]);
 
             bw.Write(meta);
             bw.Write(currentData.Count - (meta > -1 ? 1 : 0));
             bw.Write(currentData.Count - (meta > -1 ? 1 : 0));
-            table_offsets_fix.Add(bw.BaseStream.Position, table_index.Length);
-            bw.Write((uint)( table_index.Length ));
+            this.table_offsets_fix.Add(bw.BaseStream.Position, this.table_index.Length);
+            bw.Write((uint)(this.table_index.Length ));
             bw.Write(2037412641);
 
-            BinaryWriter bwindex = new BinaryWriter(table_index);
+            BinaryWriter bwindex = new BinaryWriter(this.table_index);
             bwindex.Seek(0, SeekOrigin.End);
             long bwi_pos = bwindex.BaseStream.Position;
             byte[] buffer = new byte[currentData.Count*8];
@@ -310,19 +310,19 @@
                     ulong ulongparse;
                     if (float.TryParse(keypair.Key, out floatparse))
                     {
-                        bwindex.Write((ushort)floats.LastIndexOf(floatparse));
+                        bwindex.Write((ushort)this.floats.LastIndexOf(floatparse));
                         bwindex.Write((byte)0);
                         bwindex.Write((byte)getItemType(floatparse));
                     }
                     else if (ulong.TryParse(keypair.Key, out ulongparse))
                     {
-                        bwindex.Write((ushort)idstrings.LastIndexOf(ulongparse));
+                        bwindex.Write((ushort)this.idstrings.LastIndexOf(ulongparse));
                         bwindex.Write((byte)0);
                         bwindex.Write((byte)getItemType(ulongparse));
                     }
                     else
                     {
-                        bwindex.Write((ushort)strings.LastIndexOf(keypair.Key));
+                        bwindex.Write((ushort)this.strings.LastIndexOf(keypair.Key));
                         bwindex.Write((byte)0);
                         bwindex.Write((byte)getItemType(keypair.Key));
                     }
@@ -331,7 +331,7 @@
                     //value
                     if (keypair.Value is Dictionary<string, object>)
                     {
-                        int data_index = table_count++;
+                        int data_index = this.table_count++;
                         bwindex.Write((ushort)(data_index));
 
                         long save_pos = bwindex.BaseStream.Position;
@@ -344,22 +344,22 @@
                     }
                     else if (keypair.Value is double)
                     {
-                        bwindex.Write((ushort)floats.LastIndexOf(Convert.ToSingle((double)keypair.Value)));
+                        bwindex.Write((ushort)this.floats.LastIndexOf(Convert.ToSingle((double)keypair.Value)));
                     }
                     else if (keypair.Value is float)
                     {
-                        bwindex.Write((ushort)floats.LastIndexOf(Convert.ToSingle(keypair.Value)));
+                        bwindex.Write((ushort)this.floats.LastIndexOf(Convert.ToSingle(keypair.Value)));
                     }
                     else if (keypair.Value is string)
                     {
-                        if (strings.Contains(keypair.Value as string))
-                            bwindex.Write((ushort)strings.LastIndexOf((string)keypair.Value));
+                        if (this.strings.Contains(keypair.Value as string))
+                            bwindex.Write((ushort)this.strings.LastIndexOf((string)keypair.Value));
                         else
                         {
                             float floattest;
                             if (float.TryParse((string)keypair.Value, out floattest))
                             {
-                                bwindex.Write((ushort)floats.LastIndexOf(floattest));
+                                bwindex.Write((ushort)this.floats.LastIndexOf(floattest));
                             }
                         }
                     }
@@ -367,13 +367,13 @@
                     {
                         float[] temp = (float[])keypair.Value;
                         if (temp.Length == 3)
-                            bwindex.Write((ushort)listVectorLastIndex(ref vectors, ref temp));
+                            bwindex.Write((ushort)listVectorLastIndex(ref this.vectors, ref temp));
                         else if (temp.Length == 4)
-                            bwindex.Write((ushort)listQuaternionLastIndex(ref quaternions, ref temp));
+                            bwindex.Write((ushort)listQuaternionLastIndex(ref this.quaternions, ref temp));
                     }
                     else if (ulong.TryParse(keypair.Value.ToString(), out tryp))
                     {
-                        bwindex.Write((ushort)idstrings.LastIndexOf(tryp));
+                        bwindex.Write((ushort)this.idstrings.LastIndexOf(tryp));
                     }
                     else if (keypair.Value is bool)
                     {
@@ -399,16 +399,16 @@
 
         public void export(Dictionary<string, object> data, String filename)
         {
-            floats = new List<float>();
-            strings = new List<string>();
-            vectors = new List<float[]>();
-            quaternions = new List<float[]>();
-            idstrings = new List<ulong>();
-            tables = new List<Dictionary<string, object>>();
+            this.floats = new List<float>();
+            this.strings = new List<string>();
+            this.vectors = new List<float[]>();
+            this.quaternions = new List<float[]>();
+            this.idstrings = new List<ulong>();
+            this.tables = new List<Dictionary<string, object>>();
 
-            organize(ref data, ref floats, ref strings, ref vectors, ref quaternions, ref idstrings, ref tables);
+            organize(ref data, ref this.floats, ref this.strings, ref this.vectors, ref this.quaternions, ref this.idstrings, ref this.tables);
 
-            strings.Remove("_meta");
+            this.strings.Remove("_meta");
 
             using (FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.ReadWrite))
             {
@@ -423,33 +423,33 @@
 
                 //Header
                 bw.Write(2037412641);
-                bw.Write(floats.Count);
-                bw.Write(floats.Count);
+                bw.Write(this.floats.Count);
+                bw.Write(this.floats.Count);
                 bw.Write(floatOffset);
 
                 bw.Write(2037412641);
-                bw.Write(strings.Count);
-                bw.Write(strings.Count);
+                bw.Write(this.strings.Count);
+                bw.Write(this.strings.Count);
                 bw.Write(stringOffset);
 
                 bw.Write(2037412641);
-                bw.Write(vectors.Count);
-                bw.Write(vectors.Count);
+                bw.Write(this.vectors.Count);
+                bw.Write(this.vectors.Count);
                 bw.Write(vectorOffset);
 
                 bw.Write(2037412641);
-                bw.Write(quaternions.Count);
-                bw.Write(quaternions.Count);
+                bw.Write(this.quaternions.Count);
+                bw.Write(this.quaternions.Count);
                 bw.Write(quaternionOffset);
 
                 bw.Write(2037412641);
-                bw.Write(idstrings.Count);
-                bw.Write(idstrings.Count);
+                bw.Write(this.idstrings.Count);
+                bw.Write(this.idstrings.Count);
                 bw.Write(idstringOffset);
 
                 bw.Write(2037412641);
-                bw.Write(tables.Count+1);
-                bw.Write(tables.Count+1);
+                bw.Write(this.tables.Count+1);
+                bw.Write(this.tables.Count+1);
                 bw.Write(tableOffset);
 
                 //Body
@@ -460,21 +460,21 @@
                 bw.Write((byte)8);
 
                 //Write floats
-                if (floats.Count > 0)
+                if (this.floats.Count > 0)
                 {
                     floatOffset = (uint)fs.Position;
-                    foreach (float number in floats)
+                    foreach (float number in this.floats)
                         bw.Write(number);
                 }
 
                 //Write strings
-                if (strings.Count > 0)
+                if (this.strings.Count > 0)
                 {
                     stringOffset = (uint)fs.Position;
-                    int soffset = strings.Count * 8;
+                    int soffset = this.strings.Count * 8;
                     int accumulatedstringlegth = 0;
 
-                    foreach (string text in strings)
+                    foreach (string text in this.strings)
                     {
                         bw.Write(2037412641);
                         bw.Write((uint)(stringOffset + soffset + accumulatedstringlegth));
@@ -483,7 +483,7 @@
 
                     }
 
-                    foreach (string text in strings)
+                    foreach (string text in this.strings)
                     {
                         foreach (char c in text)
                         {
@@ -497,10 +497,10 @@
                 }
 
                 //Write vectors
-                if (vectors.Count > 0)
+                if (this.vectors.Count > 0)
                 {
                     vectorOffset = (uint)fs.Position;
-                    foreach (float[] vector in vectors)
+                    foreach (float[] vector in this.vectors)
                     {
                         bw.Write(vector[0]);
                         bw.Write(vector[1]);
@@ -509,10 +509,10 @@
                 }
 
                 //Write quaternions
-                if (quaternions.Count > 0)
+                if (this.quaternions.Count > 0)
                 {
                     quaternionOffset = (uint)fs.Position;
-                    foreach (float[] quaternion in quaternions)
+                    foreach (float[] quaternion in this.quaternions)
                     {
                         bw.Write(quaternion[0]);
                         bw.Write(quaternion[1]);
@@ -522,15 +522,15 @@
                 }
 
                 //Write idstrings
-                if (idstrings.Count > 0)
+                if (this.idstrings.Count > 0)
                 {
                     idstringOffset = (uint)fs.Position;
-                    foreach (ulong idstring in idstrings)
+                    foreach (ulong idstring in this.idstrings)
                         bw.Write(idstring);
                 }
 
                 //Write tables
-                if (tables.Count > 0)
+                if (this.tables.Count > 0)
                 {
                     tableOffset = (uint)fs.Position;
 
@@ -538,13 +538,13 @@
                     WriteTable(ref data, path, ref bw);
 
                     long item_offset = bw.BaseStream.Position;
-                    foreach(KeyValuePair<long, long> pos in table_offsets_fix)
+                    foreach(KeyValuePair<long, long> pos in this.table_offsets_fix)
                     {
                         bw.BaseStream.Position = pos.Key;
                         bw.Write((uint)(item_offset + pos.Value));
                     }
                     bw.BaseStream.Position = item_offset;
-                    bw.Write(table_index.ToArray());
+                    bw.Write(this.table_index.ToArray());
                 }
 
                 bw.Write(1836436848);
@@ -574,7 +574,7 @@
                 return 3;
             else if (input is string)
             {
-                if (strings.Contains(input as string))
+                if (this.strings.Contains(input as string))
                     return 4;
                 else
                 {

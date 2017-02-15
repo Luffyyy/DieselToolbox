@@ -1,9 +1,13 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Package Browser" ClientSize="800, 600">
+<Form xmlns="http://schema.picoe.ca/eto.forms" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:self="clr-namespace:DieselToolbox;assembly=DieselToolbox" Title="Package Browser" ClientSize="800, 600" MinimumSize="800, 600">
 	<TableLayout x:Name="tblMain" Spacing="5, 10" Padding="5, 5, 5, 5">
-		<TableRow>
-			
-		</TableRow>
+		<TableRow ScaleHeight="False">
+      <TableCell ScaleWidth="True">
+        <StackLayout HorizontalContentAlignment="Stretch" Orientation="Horizontal" SizeChanged ="stckSizeChanged">
+          <self:BreadcrumbBar x:Name="brdBar" Height="25"/>
+        </StackLayout>
+      </TableCell>
+    </TableRow>
 		<TableRow>
       <Splitter x:Name="spltMain">
         <Splitter.Panel1>

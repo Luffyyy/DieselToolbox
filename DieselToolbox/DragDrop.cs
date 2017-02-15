@@ -15,18 +15,18 @@ namespace DieselToolbox
 
         public bool OutputFullPaths
         {
-            get { return Handler.OutputFullPaths; }
-            set { Handler.OutputFullPaths = value; }
+            get { return this.Handler.OutputFullPaths; }
+            set { this.Handler.OutputFullPaths = value; }
         }
 
         public void DoDragDrop(IParent parent)
         {
-            Handler.DoDragDrop(parent);
+            this.Handler.DoDragDrop(parent);
         }
 
         public void DoDragDrop(IChild child)
         {
-            Handler.DoDragDrop(child);
+            this.Handler.DoDragDrop(child);
         }
 
         public interface IDragDropController : Control.IHandler

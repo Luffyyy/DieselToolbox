@@ -7,34 +7,71 @@ using System.Text;
 
 namespace DieselEngineFormats
 {
+    public class Vector3
+    {
+        public float X { get; set; }
+
+        public float Y { get; set; }
+
+        public float Z { get; set; }
+
+        public Vector3(float? x = null, float? y = null, float? z = null)
+        {
+            this.X = x ?? 0f;
+            this.Y = y ?? 0f;
+            this.Z = z ?? 0f;
+        }
+
+    }
+
     public struct UnitPosition
     {
-        public float[] Position;
+        public Vector3 Position { get; set; }
 
-        public float[] Rotation;
+        public float[] Rotation { get; set; }
+
+        public UnitPosition(BinaryReader br)
+        {
+            this.Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            this.Rotation = new[] { br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle() };
+        }
     }
 
     public struct MassUnitHeader
     {
-        public ulong UnitPathHash;
+        public Idstring Unit { get; set; }
 
-        public Idstring UnitPath;
+        public uint Offset { get; set; }
 
-        public uint Offset;
+        public uint InstanceCount { get; set; }
 
-        public uint InstanceCount;
+        public MassUnitHeader(BinaryReader br)
+        {
+            ulong UnitPathHash = br.ReadUInt64();
+            this.Unit = HashIndex.Get(UnitPathHash);
+            br.ReadSingle(); // Unknown.
+            this.InstanceCount = br.ReadUInt32();
+            br.ReadUInt32(); // Unknown
+            this.Offset = br.ReadUInt32();
+            br.BaseStream.Seek(8, SeekOrigin.Current);
+        }
     }
     
     public class MassUnit
     {
-        public Dictionary<Idstring, List<UnitPosition>> Instances = new Dictionary<Idstring, List<UnitPosition>>();
+        public Dictionary<Idstring, List<UnitPosition>> Instances { get; set; }
 
-        public MassUnit(string filePath)
+        public MassUnit()
+        {
+            this.Instances = new Dictionary<Idstring, List<UnitPosition>>();
+        }
+
+        public MassUnit(string filePath) : this()
         {
             this.Load(filePath);
         }
 
-        public MassUnit(Stream fileStream)
+        public MassUnit(Stream fileStream) : this()
         {
             using (BinaryReader br = new BinaryReader(fileStream))
                 this.ReadFile(br);
@@ -42,50 +79,25 @@ namespace DieselEngineFormats
 
         private void ReadFile(BinaryReader br)
         {
-            var unitCount = br.ReadUInt32();
-            br.ReadUInt32(); // Unknown purpose.
-            var unitsOffset = br.ReadUInt32();
+            uint unitCount = br.ReadUInt32();
+            br.ReadUInt32(); // Unknown
+            uint unitsOffset = br.ReadUInt32();
             br.BaseStream.Seek((long)unitsOffset, SeekOrigin.Begin);
             var headers = new List<MassUnitHeader>();
             for (int i = 0; i < unitCount; ++i)
             {
-                var header = new MassUnitHeader();
-                header.UnitPathHash = br.ReadUInt64();
-				header.UnitPath = HashIndex.GetPath(header.UnitPathHash);
-                br.ReadSingle(); // Unknown.
-                header.InstanceCount = br.ReadUInt32();
-                br.ReadUInt32(); // Unknown
-                header.Offset = br.ReadUInt32();
-                br.BaseStream.Seek(8, SeekOrigin.Current);
-                headers.Add(header);
+                headers.Add(new MassUnitHeader(br));
             }
 
             foreach (var header in headers)
             {
-                if (header.UnitPath == null)
-                {
-                    Console.WriteLine("Massunit with id of {0:x} has no known path. Ignoring unit.", header.UnitPathHash);
-                    continue;
-                }
                 var instances = new List<UnitPosition>();
                 br.BaseStream.Seek(header.Offset, SeekOrigin.Begin);
                 for (int i = 0; i < header.InstanceCount; ++i)
                 {
-                    var instance = new UnitPosition();
-                    instance.Position = new float[3];
-                    instance.Rotation = new float[4];
-
-                    instance.Position[0] = br.ReadSingle();
-                    instance.Position[1] = br.ReadSingle();
-                    instance.Position[2] = br.ReadSingle();
-
-                    instance.Rotation[0] = br.ReadSingle();
-                    instance.Rotation[1] = br.ReadSingle();
-                    instance.Rotation[2] = br.ReadSingle();
-                    instance.Rotation[3] = br.ReadSingle();
-                    instances.Add(instance);
+                    instances.Add(new UnitPosition(br));
                 }
-                this.Instances[header.UnitPath] = instances;
+                this.Instances[header.Unit] = instances;
             }
         }
 
@@ -94,9 +106,7 @@ namespace DieselEngineFormats
             using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
                 using (var br = new BinaryReader(fs))
-                {
                     this.ReadFile(br);
-                }
             }
         }
     }

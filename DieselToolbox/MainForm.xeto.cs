@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable CS0649
+
+using System;
 using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
@@ -13,7 +15,7 @@ namespace DieselToolbox
 		public MainForm ()
 		{
 			XamlReader.Load (this);
-			imgBundleBrowser.Image = Definitions.FolderIcon ["closed"];
+            this.imgBundleBrowser.Image = Definitions.FolderIcon ["closed"];
 		}
 
 		protected void OnBundleBrowserClicked (object sender, EventArgs e)

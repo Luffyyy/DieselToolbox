@@ -11,8 +11,8 @@ namespace DieselEngineFormats.BNK.Sections
     {
         private long offset;
         public byte type;
-        public UInt32 length;
-        public UInt32 id;
+        public uint length;
+        public uint id;
         public byte[] remaining_data = null;
 
         public HIRC_object(BinaryReader instream)
@@ -24,11 +24,11 @@ namespace DieselEngineFormats.BNK.Sections
             this.offset = instream.BaseStream.Position;
             this.id = instream.ReadUInt32();
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("HIRC_object - YOU READ TOO MUCH!!!");
             }
@@ -68,8 +68,8 @@ namespace DieselEngineFormats.BNK.Sections
     {
         private long offset;
         public byte type; //1
-        public UInt32 length;
-        public UInt32 id;
+        public uint length;
+        public uint id;
         public byte settings_count;
         public List<byte> settings_voice = new List<byte>();
         public List<byte> settings_voice_value = new List<byte>();
@@ -91,11 +91,11 @@ namespace DieselEngineFormats.BNK.Sections
                 this.settings_voice_value.Add(instream.ReadByte());
 
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("HIRC_Settings - YOU READ TOO MUCH!!!");
             }
@@ -143,14 +143,14 @@ namespace DieselEngineFormats.BNK.Sections
     {
         private long offset;
         public byte type; //2
-        public UInt32 length;
-        public UInt32 id;
-        public UInt32 unknownInt;
-        public UInt32 soundincluded; //0 = included, 1 = streamed, 2= streamed with prefetch
-        public UInt32 soundid;
-        public UInt32 soundsourceid;
-        public UInt32 soundoffset; //if included
-        public UInt32 soundlength = UInt32.MaxValue; //if included //NOTE: MaxValue for debug, remove for release
+        public uint length;
+        public uint id;
+        public uint unknownInt;
+        public uint soundincluded; //0 = included, 1 = streamed, 2= streamed with prefetch
+        public uint soundid;
+        public uint soundsourceid;
+        public uint soundoffset; //if included
+        public uint soundlength = uint.MaxValue; //if included //NOTE: MaxValue for debug, remove for release
         public byte soundtype; //00 = Sound SFX, 01 = Sound Voice
         public SoundStructure structure;
 
@@ -176,11 +176,11 @@ namespace DieselEngineFormats.BNK.Sections
             this.soundtype = instream.ReadByte();
             //this.structure = new SoundStructure(instream);
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("HIRC_SoundSFX - YOU READ TOO MUCH!!!");
             }
@@ -239,18 +239,18 @@ namespace DieselEngineFormats.BNK.Sections
     {
         private long offset;
         public byte type; //3
-        public UInt32 length;
-        public UInt32 id;
+        public uint length;
+        public uint id;
         public byte scope;
         public byte actionType;
-        public UInt32 gameObjectID;
+        public uint gameObjectID;
         public byte unknown1; //always 0
         public byte additionalParameters;
         public List<byte> parameterTypes = new List<byte>();
         public List<byte> parameterValues = new List<byte>();
         public byte unknown2; //always 0
-        public UInt32 stateGroupId; // if actionType == 0x12 || 0x19
-        public UInt32 stateId; // if actionType == 0x12 || 0x19
+        public uint stateGroupId; // if actionType == 0x12 || 0x19
+        public uint stateId; // if actionType == 0x12 || 0x19
 
         public byte[] remaining_data = null;
 
@@ -278,11 +278,11 @@ namespace DieselEngineFormats.BNK.Sections
                 this.stateId = instream.ReadUInt32();
             }
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("HIRC_EventAction - YOU READ TOO MUCH!!!");
             }
@@ -347,15 +347,15 @@ namespace DieselEngineFormats.BNK.Sections
     {
         private long offset;
         public byte type; //11
-        public UInt32 length;
-        public UInt32 id;
+        public uint length;
+        public uint id;
 
         public byte[] unknown1; //8 unknown bytes
-        public UInt32 streamed; //? Seems to determine following positions
-        public UInt32 soundID;
-        public UInt32 soundID2; //repeated.?
+        public uint streamed; //? Seems to determine following positions
+        public uint soundID;
+        public uint soundID2; //repeated.?
         public byte[] unknown2; //9 bytes if streamed == 1 AND 17 bytes if streamed == 2
-        public UInt32 soundID3; //repeated.? for the third time? I get it. It's this ID. Stop repeating it.
+        public uint soundID3; //repeated.? for the third time? I get it. It's this ID. Stop repeating it.
         public byte[] unknown3; //24 unknown bytes
         public Double soundLength; //sound length in ms (1000 ms = 1 sec)
 
@@ -383,11 +383,11 @@ namespace DieselEngineFormats.BNK.Sections
             this.unknown3 = instream.ReadBytes(24);
             this.soundLength = instream.ReadDouble();
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("HIRC_MusicTrack - YOU READ TOO MUCH!!!");
             }
@@ -443,8 +443,8 @@ namespace DieselEngineFormats.BNK.Sections
     {
         private long offset;
         public byte type; //10
-        public UInt32 length;
-        public UInt32 id;
+        public uint length;
+        public uint id;
 
         public SoundStructure soundstructure;
         public byte[] unknown1 = null;
@@ -474,11 +474,11 @@ namespace DieselEngineFormats.BNK.Sections
             for (int x = 0; x < this.childObjectsCount; x++)
                 this.childObjects.Add(instream.ReadUInt32());
             */
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("HIRC_MusicSegment - YOU READ TOO MUCH!!!");
             }
@@ -532,8 +532,8 @@ namespace DieselEngineFormats.BNK.Sections
 
         public long offset;
 
-        public UInt32 length;
-        public UInt32 objects_count;
+        public uint length;
+        public uint objects_count;
         public List<object> objects = new List<object>();
 
         public byte[] remaining_data = null;

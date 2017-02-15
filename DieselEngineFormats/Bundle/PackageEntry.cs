@@ -1,17 +1,11 @@
-﻿// -----------------------------------------------------------------------
-// <copyright file="BundleEntry.cs" company="Zwagoth">
-// This code is released into the public domain by Zwagoth.
-// </copyright>
-// -----------------------------------------------------------------------
-
-namespace DieselEngineFormats.Bundle
+﻿namespace DieselEngineFormats.Bundle
 {
     using System.IO;
 
     /// <summary>
     /// The bundle entry.
     /// </summary>
-    public class BundleFileEntry
+    public class PackageFileEntry
     {
         #region Fields
 
@@ -49,7 +43,7 @@ namespace DieselEngineFormats.Bundle
 
         #region Public Methods and Operators
 
-        public BundleFileEntry(BinaryReader br, bool has_length = false)
+        public PackageFileEntry(BinaryReader br, bool has_length = false)
         {
             this.ReadEntry(br, has_length);
         }

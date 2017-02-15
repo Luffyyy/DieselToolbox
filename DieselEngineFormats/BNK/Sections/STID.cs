@@ -9,7 +9,7 @@ namespace DieselEngineFormats.BNK.Sections
 {
     class SoundBank
     {
-        public UInt32 id;
+        public uint id;
         public String soundbank_name;
 
         public SoundBank(BinaryReader instream)
@@ -30,9 +30,9 @@ namespace DieselEngineFormats.BNK.Sections
         private uint STID_tag = 0x44495453;
         public long offset;
 
-        public UInt32 length;
-        public UInt32 unknownInt1;
-        public UInt32 soundbank_count;
+        public uint length;
+        public uint unknownInt1;
+        public uint soundbank_count;
         public List<SoundBank> soundbanks = new List<SoundBank>();
 
         public byte[] remaining_data = null;
@@ -47,11 +47,11 @@ namespace DieselEngineFormats.BNK.Sections
             for (int x = 0; x < this.soundbank_count; x++)
                 this.soundbanks.Add(new SoundBank(instream));
 
-            if (instream.BaseStream.Position - offset < this.length)
+            if (instream.BaseStream.Position - this.offset < this.length)
             {
-                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - offset)));
+                this.remaining_data = instream.ReadBytes((int)(this.length - (uint)(instream.BaseStream.Position - this.offset)));
             }
-            else if (instream.BaseStream.Position - offset > this.length)
+            else if (instream.BaseStream.Position - this.offset > this.length)
             {
                 Console.WriteLine("STID - YOU READ TOO MUCH!!!");
             }

@@ -17,10 +17,10 @@
         public Idstring Name {
             get
             {
-                if (_ids_name == null)
-                    _ids_name = HashIndex.GetAny(_name);
+                if (this._ids_name == null)
+                    this._ids_name = HashIndex.Get(this._name);
 
-                return _ids_name;
+                return this._ids_name;
             }
         }
 
