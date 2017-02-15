@@ -1,5 +1,4 @@
-﻿using DieselEngineFormats.Bundle;
-using Eto.GtkSharp.Forms;
+﻿using Eto.GtkSharp.Forms;
 using System;
 using System.Collections.Generic;
 using System.IO;

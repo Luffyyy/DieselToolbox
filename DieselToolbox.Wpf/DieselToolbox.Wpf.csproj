@@ -89,6 +89,10 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DieselEngineFormats, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\DieselEngineFormats.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -106,10 +110,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DieselEngineFormats\DieselEngineFormats.csproj">
-      <Project>{16535B4F-2EC1-4896-B0E7-573152E839CF}</Project>
-      <Name>DieselEngineFormats</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DieselToolbox\DieselToolbox.csproj">
       <Project>{F687CEAE-73FF-420E-AA4C-94DED83A03D1}</Project>
       <Name>DieselToolbox</Name>

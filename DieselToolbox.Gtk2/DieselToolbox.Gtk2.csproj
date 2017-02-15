@@ -65,10 +65,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DieselEngineFormats\DieselEngineFormats.csproj">
-      <Project>{16535b4f-2ec1-4896-b0e7-573152e839cf}</Project>
-      <Name>DieselEngineFormats</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DieselToolbox\DieselToolbox.csproj">
       <Project>{F687CEAE-73FF-420E-AA4C-94DED83A03D1}</Project>
       <Name>DieselToolbox</Name>

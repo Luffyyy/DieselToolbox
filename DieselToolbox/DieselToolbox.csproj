@@ -143,6 +143,10 @@
       <HintPath>..\packages\CSharpImageLibrary.3.1.6.0\lib\net45\CSharpImageLibrary.exe</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="DieselEngineFormats, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libs\DieselEngineFormats.dll</HintPath>
+    </Reference>
     <Reference Include="Eto">
       <HintPath>..\packages\Eto.Forms.2.2.0\lib\net45\Eto.dll</HintPath>
     </Reference>
@@ -229,12 +233,6 @@
     </Content>
     <None Include="BrowserWindow.xaml.cs" />
     <None Include="Hashlists\main.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DieselEngineFormats\DieselEngineFormats.csproj">
-      <Project>{16535B4F-2EC1-4896-B0E7-573152E839CF}</Project>
-      <Name>DieselEngineFormats</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="scripts\DDS Texture\main.py">
