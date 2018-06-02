@@ -60,12 +60,15 @@ namespace DieselToolbox
                 );
             }
 
+            /*
             foreach(PackageFooterEntry entry in header.References)
             {
                 this.treeReferenceEntries.Children.Add(
                     new TreeItem { Text = String.Format("{0}.{1}", entry.Path.ToString(), entry.Extension.ToString()), Tag = entry }
                 );
             }
+            */
+
         }
 
         public void treeEntries_SelectionChanged(object sender, EventArgs e)

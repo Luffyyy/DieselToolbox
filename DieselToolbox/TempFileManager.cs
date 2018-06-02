@@ -16,12 +16,12 @@ namespace DieselToolbox
     {
         public class TempFile : IDisposable
         {
-            public TempFile(FileEntry entry, PackageFileEntry be = null, dynamic exporter = null)
+            public TempFile(FileEntry entry, PackageFileEntry be = null, FormatConverter exporter = null)
             {
                 this.Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Definitions.TempDir, $"{entry._path.HashedString}.{entry._extension.ToString()}");
 
-                if (exporter?.extension != null)
-                    this.Path += "." + exporter.extension;
+                if (exporter != null && exporter.Extension != null)
+                    this.Path += "." + exporter.Extension;
 
                 object file_data = entry.FileData(be, exporter);
 
@@ -42,7 +42,8 @@ namespace DieselToolbox
                     File.WriteAllLines(this.Path, (string[])file_data);
 
                 this.Entry = be;
-                this.ExporterKey = exporter?.key;
+                if(exporter != null)
+                    this.ExporterKey = exporter.Key;
             }
 
             ~TempFile()
@@ -162,21 +163,26 @@ namespace DieselToolbox
         {
             try
             {
+                Console.WriteLine(entry.BundleEntries.Count);
                 if (entry.BundleEntries.Count == 0)
                     return;
 
                 string typ = Definitions.TypeFromExtension(entry._extension.ToString());
-                dynamic exporter = null;
+                FormatConverter exporter = null;
 
                 if (ScriptActions.Converters.ContainsKey(typ))
                 {
-                    SaveOptionsDialog dlg = new SaveOptionsDialog(typ);
-                    DialogResult dlgres = dlg.ShowModal();
+                  //  if(ScriptActions.Converters[typ].Count > 1)
+                   // {
+                        SaveOptionsDialog dlg = new SaveOptionsDialog(typ);
+                        DialogResult dlgres = dlg.ShowModal();
 
-                    if (dlgres == DialogResult.Cancel)
-                        return;
-                    exporter = dlg.SelectedExporter;
-                }               
+                        if (dlgres == DialogResult.Cancel)
+                            return;
+
+                        exporter = dlg.SelectedExporter;
+                  //  }
+                }
 
                 //Thread thread = new Thread(() =>
                 //{
@@ -225,7 +231,7 @@ namespace DieselToolbox
             }
         }
 
-        public TempFile CreateTempFile(FileEntry entry, PackageFileEntry be = null, dynamic exporter = null)
+        public TempFile CreateTempFile(FileEntry entry, PackageFileEntry be = null, FormatConverter exporter = null)
         {
             if (this.TempFiles.ContainsKey(entry))
                 this.DeleteTempFile(entry);
@@ -235,10 +241,10 @@ namespace DieselToolbox
             return temp;
         }
 
-        public TempFile GetTempFile(FileEntry file, PackageFileEntry entry = null, dynamic exporter = null)
+        public TempFile GetTempFile(FileEntry file, PackageFileEntry entry = null, FormatConverter exporter = null)
         {
             TempFile path;
-            if (!this.TempFiles.ContainsKey(file) || this.TempFiles[file].Disposed || !File.Exists(this.TempFiles[file].Path) || this.TempFiles[file].ExporterKey != exporter?.key || this.TempFiles[file].Entry != entry)
+            if (!this.TempFiles.ContainsKey(file) || this.TempFiles[file].Disposed || !File.Exists(this.TempFiles[file].Path) || this.TempFiles[file].ExporterKey != exporter.Key || this.TempFiles[file].Entry != entry)
             {
                 if (this.TempFiles.ContainsKey(file))
                     this.DeleteTempFile(file);

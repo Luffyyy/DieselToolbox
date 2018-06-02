@@ -12,6 +12,10 @@ using CSScriptLibrary;
 using DieselEngineFormats.Bundle;
 using System.Text;
 using Eto.Forms;
+using DieselEngineFormats.ScriptData;
+using DieselEngineFormats;
+using System.Diagnostics;
+using DieselToolbox.Utils;
 
 namespace DieselToolbox
 {
@@ -94,19 +98,23 @@ namespace DieselToolbox
 
             //this.LoadHashlists ();
 
+            LoadConverters();
+
 			if (launchMain)
 			{
-				MainForm main = new MainForm();
                 try {
-                    app.Run(main);
+				    frmPackageBrowser brower = new frmPackageBrowser();
+                    app.Run(brower);
                 }
                 catch(Exception exc)
                 {
                     Console.WriteLine(exc.Message);
                     Console.WriteLine(exc.StackTrace);
+                    Console.Read();
                 }
 
 			}
+
 
 			if (showHelp)
 				this.PrintHelp();
@@ -117,10 +125,116 @@ namespace DieselToolbox
 
 		}
 
-		public void LoadScripts()
+        public void LoadConverters()
+        {
+            FormatConverter cXML = new FormatConverter()
+            {
+                Key = "script_cxml",
+                Title = "Custom XML",
+                Extension = "xml",
+                Type = "scriptdata"
+            };
+
+            cXML.ExportEvent += (MemoryStream ms, bool escape) =>
+            {
+                return new CustomXMLNode("table", (Dictionary<string, object>)new ScriptData(new BinaryReader(ms)).Root, "").ToString(0, escape);
+            };
+
+            ScriptActions.AddConverter(cXML);
+
+            FormatConverter Strings = new FormatConverter()
+            {
+                Key = "diesel_strings",
+                Title = "Diesel",
+                Extension = "strings",
+                Type = "strings"
+            };
+
+            Strings.ImportEvent += (path) => new StringsFile(path);
+            ScriptActions.AddConverter(Strings);
+
+            /*ScriptActions.AddConverter(new FormatConverter()
+            {
+                Key = "texture_dds",
+                Title = "DDS",
+                Extension = "dds",
+                Type = "texture"
+            });*/
+
+            FormatConverter stringsCSV = new FormatConverter()
+            {
+                Key = "strings_csv",
+                Title = "CSV",
+                Extension = "csv",
+                Type = "strings"
+            };
+
+            //Excel doesn't seem to like it?
+            stringsCSV.ExportEvent += (MemoryStream ms, bool arg0) =>
+            {
+                StringsFile str = new StringsFile(ms);
+                StringBuilder builder = new StringBuilder();
+                builder.Append("ID,String\n");
+                foreach (var entry in str.LocalizationStrings)
+                    builder.Append("\"" + entry.ID.ToString() + "\",\"" + entry.Text + "\"\n");
+                Console.WriteLine(builder.ToString());
+                return builder.ToString();
+            };
+
+            ScriptActions.AddConverter(stringsCSV);
+
+            FormatConverter scriptJSON = new FormatConverter()
+            {
+                Key = "script_json",
+                Title = "JSON",
+                Extension = "json",
+                Type = "scriptdata"
+            };
+
+            scriptJSON.ExportEvent += (MemoryStream ms, bool arg0) =>
+            {
+                ScriptData sdata = new ScriptData(new BinaryReader(ms));
+                return (new JSONNode("table", sdata.Root, "")).ToString();
+            };
+
+            ScriptActions.AddConverter(scriptJSON);
+
+            FormatConverter stringsJSON = new FormatConverter()
+            {
+                Key = "strings_json",
+                Title = "JSON",
+                Extension = "json",
+                Type = "strings"
+            };
+
+            //Excel doesn't seem to like it?
+            stringsJSON.ExportEvent += (MemoryStream ms, bool arg0) =>
+            {
+                StringsFile str = new StringsFile(ms);
+                StringBuilder builder = new StringBuilder();
+                builder.Append("{\n");
+                for (int i = 0; i < str.LocalizationStrings.Count; i++)
+                {
+                    StringEntry entry = str.LocalizationStrings[i];
+                    builder.Append("\t");
+                    builder.Append("\"" + entry.ID + "\" : \"" + entry.Text + "\"");
+                    if(i < str.LocalizationStrings.Count - 1)
+                        builder.Append(",");
+                    builder.Append("\n");
+                }
+                builder.Append("}");
+                Console.WriteLine(builder.ToString());
+                return builder.ToString();
+            };
+
+            ScriptActions.AddConverter(stringsJSON);
+        }
+
+        public void LoadScripts()
 		{
-			
-			foreach (string folder in Directory.EnumerateDirectories(this.scriptPath))
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            foreach (string folder in Directory.EnumerateDirectories(this.scriptPath))
 			{
                 try
                 {
@@ -129,9 +243,7 @@ namespace DieselToolbox
 					{
 						dynamic scope = StaticData.Engine.CreateScope();
                         foreach (string file in Directory.GetFiles(folder))
-                        {
                             StaticData.Engine.ExecuteFile(file, scope);
-                        }
 
                         if (scope.register != null)
                             scope.register();
@@ -143,9 +255,7 @@ namespace DieselToolbox
                         {
                             dynamic obj = objAssembly.CreateInstance("main", true);
                             if (obj.GetType().GetMethod("register") != null)
-                            {
                                 obj.register();
-                            }
                         }
                         else
                             Console.WriteLine("Script with path \"{0}\" does not contain a main entry point type!", main_path);
@@ -156,10 +266,13 @@ namespace DieselToolbox
                     Console.WriteLine(exc.Message);
                     Console.WriteLine(exc.StackTrace);
                 }
-            }
-		}
 
-		public void LoadHashlists()
+                watch.Stop();
+            }
+            Console.WriteLine("Loaded scripts successfully, it took {0} seconds", watch.ElapsedMilliseconds / 1000f);
+        }
+
+        public void LoadHashlists()
 		{
             HashIndex.Load(Path.Combine(Definitions.HashDir, "paths"), HashIndex.HashType.Path);
             HashIndex.Load(Path.Combine(Definitions.HashDir, "exts"));
@@ -170,30 +283,70 @@ namespace DieselToolbox
 		}
 	}
 
-	public static class ScriptActions
+    public class FormatConverter
+    {
+        public string Key;
+        public string Title;
+        public string Extension;
+        public string Type;
+
+        public delegate object ExportEventDel(MemoryStream ms, bool arg0);
+        public event ExportEventDel ExportEvent;
+
+        public object Export(MemoryStream ms, bool arg0=false)
+        {
+            if (ExportEvent != null)
+                return ExportEvent(ms, arg0);
+            return ms;
+        }
+
+        public delegate object ImportEventDel(string path);
+        public event ImportEventDel ImportEvent;
+
+        public object Import(string path)
+        {
+            return null;
+        }
+    }
+
+    public static class ScriptActions
 	{
-		public static Dictionary<string, Dictionary<string, dynamic>> Converters = new Dictionary<string, Dictionary<string, dynamic>>();
+		public static Dictionary<string, Dictionary<string, FormatConverter>> Converters = new Dictionary<string, Dictionary<string, FormatConverter>>();
         public static Dictionary<string, dynamic> Scripts = new Dictionary<string, dynamic>();
 
+        public static void AddConverter(FormatConverter format)
+        {
+            if (format.Key == null)
+            {
+                Console.WriteLine("[ERROR] Converter must have a key variable!");
+                return;
+            }
+
+            if (!Converters.ContainsKey(format.Type))
+                Converters.Add(format.Type, new Dictionary<string, FormatConverter>());
+
+            if (Converters[format.Type].ContainsKey(format.Key))
+            {
+                Console.WriteLine("[ERROR] Conveter is already registered with key {0}", format.Key);
+                return;
+            }
+
+            Converters[format.Type].Add(format.Key, format);
+        }
 
         public static void RegisterConverter(dynamic pis)
 		{
-            if (pis.key == null)
+            FormatConverter format = new FormatConverter()
             {
-                Console.WriteLine("[ERROR] Conveter to register must have a key variable!");
-                return;
-            }
+                Key = pis.key,
+                Extension = pis.extension,
+                Type = pis.type,
+                Title = pis.title
+            };
 
-            if (!Converters.ContainsKey(pis.type))
-                Converters.Add(pis.type, new Dictionary<string, dynamic>());
+            format.ExportEvent += pis.export;
 
-            if (Converters[pis.type].ContainsKey(pis.key))
-            {
-                Console.WriteLine("[ERROR] Conveter is already registered with key {0}", pis.key);
-                return;
-            }
-
-            Converters[pis.type].Add(pis.key, pis);
+            AddConverter(format);
         }
 
         public static void RegisterScript(dynamic pis)
@@ -213,7 +366,7 @@ namespace DieselToolbox
             Scripts.Add(pis.key, pis);
         }
 
-        public static dynamic GetConverter(string type, string key)
+        public static FormatConverter GetConverter(string type, string key)
         {
             if (!Converters.ContainsKey(type) || !Converters[type].ContainsKey(key))
                 return null;

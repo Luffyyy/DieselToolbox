@@ -78,7 +78,6 @@ namespace DieselToolbox
 			{"text",  Icon.FromResource("DieselToolbox.ImageResources.document-text.ico")},
 			{"strings",  Icon.FromResource("DieselToolbox.ImageResources.document-text.ico")},
 			{"default",  Icon.FromResource("DieselToolbox.ImageResources.document.ico")},
-
         };
 
 		public static string TypeFromExtension(string ext)
@@ -91,8 +90,8 @@ namespace DieselToolbox
 			return ext;
 		}
 
-        public static double MinimumHorizontalDragDistance { get { return 8; } }
-        public static double MinimumVerticalDragDistance { get { return 8; } }
+        public static double MinimumHorizontalDragDistance { get => 8; }
+        public static double MinimumVerticalDragDistance { get => 8; }
 
         public static string TempDir = "Browser";
 

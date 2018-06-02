@@ -110,28 +110,29 @@ namespace DieselToolbox
             this.CurrentProgressString = "Registering File Entries";
 			Dictionary<uint, FileEntry> fileEntries = this.DatabaseEntryToFileEntry(this.BundleDB.GetDatabaseEntries());
 
-            this.CurrentProgressString = "Loading Package Headers";
-            List<string> bundles_heads = Directory.EnumerateFiles(this.WorkingDirectory, "*_h.bundle").ToList();
+            this.CurrentProgressString = "Loading Packages";
 
-            List<string> files = bundles_heads.Count == 0 ? Directory.EnumerateFiles(this.WorkingDirectory, "*.bundle").ToList() : bundles_heads;
+            List<string> files = Directory.EnumerateFiles(this.WorkingDirectory, "*.bundle").ToList();
             for (int i = 0; i < files.Count; i++)
             {
                 string file = files[i];
-                if (File.Exists(file.Replace("_h", "")))
-                {
-                    this.CurrentProgressString = String.Format("Loading Package {0}/{1}", i, files.Count);
-					PackageHeader bundle = new PackageHeader(file);
-					this.AddBundleEntriesToFileEntries (fileEntries, bundle.Entries);
-                    this.PackageHeaders.Add(bundle.Name, bundle);
-                }
+                if (file.EndsWith("_h.bundle"))
+                    continue;
+
+			    PackageHeader bundle = new PackageHeader();
+                if (!bundle.Load(file))
+                    continue;
+
+                this.CurrentProgressString = String.Format("Loading Package {0}/{1}", i, files.Count);
+				this.AddBundleEntriesToFileEntries (fileEntries, bundle.Entries);
+                this.PackageHeaders.Add(bundle.Name, bundle);
             }
 
             this.CurrentProgressString = "Registring Folder Layout";
             this.Root = new FolderItem(fileEntries) { Path = "assets", Name = "assets" };
             foreach(FileEntry entry in fileEntries.Values)
-            {
                 this.RawFiles.Add(new Tuple<Idstring, Idstring, Idstring> (entry._path, entry._language, entry._extension), entry);
-            }
+
             this.finishedLoad = true;
             HashIndex.Clear();
             GC.Collect();
@@ -151,11 +152,9 @@ namespace DieselToolbox
 
 		private void AddBundleEntriesToFileEntries(Dictionary<uint, FileEntry> fileEntries, List<PackageFileEntry> bes)
 		{
-			foreach (PackageFileEntry be in bes) {
-				if (fileEntries.ContainsKey (be.ID)) {
+            foreach (PackageFileEntry be in bes)
+				if (fileEntries.ContainsKey (be.ID))
 					fileEntries[be.ID].AddBundleEntry(be);
-				}
-			}
 		}
 
         public void Dispose()

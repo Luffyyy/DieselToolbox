@@ -136,24 +136,14 @@ namespace DieselToolbox
             this._max_entry = null;
         }
 
-        public object FileData(PackageFileEntry be = null, dynamic exporter = null)
+        public object FileData(PackageFileEntry be = null, FormatConverter exporter = null)
         {
             if (exporter == null)
-            {
                 return this.FileStream(be);
-            }
             else
             {
                 MemoryStream stream = this.FileStream(be);
-
-                if (exporter != null && !((exporter.GetType().GetMethod("export") != null) || exporter.export != null))
-                    throw new InvalidDataException("Inputted exporter does not contain a method definition for export!");
-
-                if (stream == null)
-                    return null;
-                object data = exporter.export(stream);
-                //stream.Close();
-                return data;
+                return stream == null ? null : exporter.Export(this.FileStream(be));
             }
         }
 
@@ -217,8 +207,8 @@ namespace DieselToolbox
         public void SetDBEntry(DatabaseEntry ne, PackageDatabase db)
         {
             this.DBEntry = ne;
-            if (!ne.Path.HasUnHashed)
-                Console.WriteLine("No unhashed string for " + ne.Path.Hashed);
+            //if (!ne.Path.HasUnHashed)
+            //    Console.WriteLine("No unhashed string for " + ne.Path.Hashed);
 
             General.GetFilepath(ne, out this._path, out this._language, out this._extension, db);
         }

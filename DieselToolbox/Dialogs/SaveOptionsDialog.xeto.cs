@@ -12,9 +12,9 @@ namespace DieselToolbox
 	{
 		DropDown cmbOptions;
 
-		private Dictionary<string, dynamic> Exporters;
+		private Dictionary<string, FormatConverter> Exporters;
 
-		public dynamic SelectedExporter { get; set; }
+		public FormatConverter SelectedExporter { get; set; }
 
 		public SaveOptionsDialog (string type)
 		{
@@ -31,28 +31,20 @@ namespace DieselToolbox
 				this.RegisterExporters (ScriptActions.Converters[type]);
 		}
 
-		public void RegisterExporters(Dictionary<string, dynamic> exporters)
+		public void RegisterExporters(Dictionary<string, FormatConverter> exporters)
 		{
-			this.Exporters = new Dictionary<string, dynamic>();
+			this.Exporters = new Dictionary<string, FormatConverter>();
 
-			foreach (KeyValuePair<string, dynamic> dyn in exporters)
+			foreach (KeyValuePair<string, FormatConverter> dyn in exporters)
 				this.RegisterExporter (dyn.Key, dyn.Value);
 		}
 
-		public void RegisterExporter(string key, dynamic obj)
+		public void RegisterExporter(string key, FormatConverter obj)
 		{
             try
             {
-
-                if ((obj.GetType().GetMethod("export") != null) || obj.export != null)
-                {
-                    this.cmbOptions.Items.Add(obj.title, key);
-                    this.Exporters.Add(key, obj);
-
-                    //if (obj.options != null) {
-
-                    //}
-                }
+                this.cmbOptions.Items.Add(obj.Title, key);
+                this.Exporters.Add(key, obj);
             }
             catch(Exception exc)
             {

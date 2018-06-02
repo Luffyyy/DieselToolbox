@@ -9,7 +9,7 @@ namespace DieselToolbox.WinForms
 		[STAThread]
 		public static void Main (string[] args)
 		{
-			new Application (Platforms.WinForms).Run (new MainForm ());
+			new Application (Eto.Platform.Detect).Run (new frmPackageBrowser());
 		}
 	}
 }

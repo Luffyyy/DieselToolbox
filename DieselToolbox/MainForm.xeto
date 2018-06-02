@@ -4,7 +4,9 @@
 		<TableRow>
 			<ImageView x:Name="imgBundleBrowser"/>
 			<Button Click="OnBundleBrowserClicked">Package Browser</Button>
-		</TableRow>
+      <ImageView x:Name="imgFontEditor"/>
+      <Button Click="OnFontEditorClicked">Font Editor</Button>
+    </TableRow>
 		<TableRow></TableRow>
 	</TableLayout>
 </Form>

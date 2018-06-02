@@ -156,7 +156,7 @@ public class HeistExtractor
             FileEntry c_file = this._browser.RawFiles[t_ids];
             this.WriteFile(c_file);
 
-            string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(c_file.FileStream(), true);
+            string xml = (string)ScriptActions.GetConverter("scriptdata", "script_cxml").Export(c_file.FileStream(), true);
 
             XmlDocument doc = new XmlDocument();
 
@@ -190,7 +190,7 @@ public class HeistExtractor
             FileEntry m_file = this._browser.RawFiles[t_m_ids];
             this.WriteFile(m_file);
 
-            string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(m_file.FileStream(), true);
+            string xml = (string)ScriptActions.GetConverter("scriptdata", "script_cxml").Export(m_file.FileStream(), true);
 
             XmlDocument doc = new XmlDocument();
 
@@ -440,7 +440,7 @@ public class HeistExtractor
         }*/
         MemoryStream str = file.FileStream();
         this.WriteFile(file, str.ToArray());
-        string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(str, true);
+        string xml = (string)ScriptActions.GetConverter("scriptdata", "script_cxml").Export(str, true);
         this.ProcessXML(file, lookup, xml);
     }
 

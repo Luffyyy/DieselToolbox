@@ -3,7 +3,7 @@
 	<TableLayout Spacing="5,5" Padding="5,5,5,5">
 		<TableRow>
 			<Label VerticalAlignment="Center" TextAlignment="Right">Exporter:</Label>
-			<DropDown x:Name="cmbOptions" ReadOnly="True">
+			<DropDown x:Name="cmbOptions">
 				
 			</DropDown>
 		</TableRow>

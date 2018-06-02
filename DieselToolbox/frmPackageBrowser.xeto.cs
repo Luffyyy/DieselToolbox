@@ -30,11 +30,11 @@ namespace DieselToolbox
         BreadcrumbBar brdBar;
 
 		private PackageBrowser Browser;
-
+        
         private PointF DragStartLocation;
         private bool DraggingDrop = false;
 
-		public frmPackageBrowser ()
+        public frmPackageBrowser()
 		{
             App.Instance.LoadScripts();
 			XamlReader.Load(this);
@@ -53,7 +53,8 @@ namespace DieselToolbox
             grdFolder.MouseMove += ViewMouseMove;
 
             grdFolder.CellDoubleClick += GrdFolder_CellDoubleClick;*/
-            this.grdFolder.CellClick += this.ViewDragMouseClick;
+            
+            grdFolder.SelectionChanged += this.ViewDragMouseClick;
 
             /*treeMain.MouseUp += ViewDragMouseUp;
             treeMain.MouseMove += ViewMouseMove;*/
@@ -126,11 +127,7 @@ namespace DieselToolbox
             };
 
 
-            this.Closed += (sender, e) =>
-            {
-                this.Browser.Dispose();
-            };
-
+           // this.Closed += (sender, e) => this.Browser.Dispose();
             this.PopulateScripts();
         }
 
@@ -183,6 +180,12 @@ namespace DieselToolbox
                 this.DraggingDrop = false;
         }
 
+        
+        void btnFontEditorClicked(object sender, EventArgs e)
+        {
+            
+        }
+
         void btnInspectPackage_Click(object sender, EventArgs e)
         {
             if (this._focused_package != null)
@@ -203,7 +206,7 @@ namespace DieselToolbox
 			}
 		}
 
-		void GrdFolder_CellDoubleClick (object sender, GridViewCellEventArgs e)
+		void GrdFolder_CellDoubleClick (object sender, GridCellMouseEventArgs e)
 		{
 			if (e.Item != null) {
 				if (e.Item is IParent)
@@ -212,7 +215,6 @@ namespace DieselToolbox
                     this.Browser.TempFileManager.ViewFile((FileEntry)e.Item);
 			}
 		}
-			
 
 		void OnTreeItemCollapsed (object sender, TreeViewItemEventArgs e)
 		{
@@ -230,13 +232,11 @@ namespace DieselToolbox
 		{
 			OpenFileDialog dlg = new OpenFileDialog();
 			dlg.MultiSelect = false;
-			dlg.Filters.Add ( new FileDialogFilter("BLB Database", ".blb"));
+			dlg.Filters.Add ( new FileFilter("BLB Database", ".blb"));
 			dlg.CheckFileExists = true;
 			DialogResult select = dlg.ShowDialog(this);
 			if (select == DialogResult.Ok)
-			{
 				this.LoadDatabase(dlg.FileName);
-			}
 		}
 
 		public void LoadDatabase(string path)

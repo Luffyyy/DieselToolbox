@@ -290,8 +290,8 @@ public class HashlistScraper
         {
 
         }*/
-        Stream str = file.FileStream();
-        string xml = ScriptActions.GetConverter("scriptdata", "script_cxml").export(str, true);
+        MemoryStream str = file.FileStream();
+        string xml = (string)ScriptActions.GetConverter("scriptdata", "script_cxml").Export(str, true);
         str = null;
         this.ProcessXML(file, lookup, xml);
     }
