@@ -228,6 +228,23 @@ namespace DieselToolbox
             };
 
             ScriptActions.AddConverter(stringsJSON);
+
+            FormatConverter stringsView = new FormatConverter()
+            {
+                Key = "strings_view",
+                Title = "Strings view",
+                Extension = "strings",
+                Type = "strings"
+            };
+
+            //Excel doesn't seem to like it?
+            stringsView.ExportEvent += (MemoryStream ms, bool arg0) =>
+            {
+                new StringViewer(ms).Show();
+                return ms;
+            };
+
+            ScriptActions.AddConverter(stringsView);
         }
 
         public void LoadScripts()
